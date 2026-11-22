@@ -295,6 +295,14 @@ wss.on('connection', (ws) => {
     const p = getPlayer(c.playerId);
     if (!p) return;
 
+    // ===== Заработок =====
+    if (msg.type === 'earn_money') {
+      p.balance += 0.1;
+      sendStateTo(ws, c.playerId);
+      saveData();
+      return;
+    }
+
     // ===== Открыть кейс =====
     if (msg.type === 'open_case') {
       const caseObj = CASES.find(x => x.id === msg.caseId);
@@ -372,6 +380,8 @@ wss.on('connection', (ws) => {
       });
       if (p.history.length > MAX_HISTORY) p.history.length = MAX_HISTORY;
       sendStateTo(ws, c.playerId);
+      
+      // Передаем source, чтобы клиент знал, что сгорело
       send(ws, { type: 'upgrade_result', result, wonItem, chance, goldActive, target, source });
       saveData();
       return;
@@ -426,7 +436,6 @@ wss.on('connection', (ws) => {
       b.status = 'playing';
       b.drops = { [b.creatorId]: [], [b.joinerId]: [] };
 
-      // Оба клиента получают старт
       const participants = [b.creatorId, b.joinerId];
       participants.forEach(pid => {
         for (const [w, info] of clients) {
@@ -456,7 +465,6 @@ wss.on('connection', (ws) => {
       if (!b || b.status !== 'playing') return;
       if (b.creatorId !== c.playerId && b.joinerId !== c.playerId) return;
 
-      // Крутим весь список кейсов для игрока
       const drops = [];
       for (const caseId of b.caseIds) {
         const caseObj = CASES.find(x => x.id === caseId);
@@ -466,7 +474,6 @@ wss.on('connection', (ws) => {
       }
       b.drops[c.playerId] = drops;
 
-      // Рассылаем всем участникам прогресс
       const participants = [b.creatorId, b.joinerId];
       participants.forEach(pid => {
         for (const [w, info] of clients) {
@@ -481,7 +488,6 @@ wss.on('connection', (ws) => {
         }
       });
 
-      // Если оба сбросили — финал
       if (b.drops[b.creatorId] && b.drops[b.joinerId]) {
         finishBattle(b);
       }
@@ -489,14 +495,6 @@ wss.on('connection', (ws) => {
       return;
     }
   });
-
-  // ===== Заработок (КНО/ПКА) =====
-if (msg.type === 'earn_money') {
-  p.balance += 0.1;
-  sendStateTo(ws, c.playerId);
-  saveData();
-  return;
-}
 
   ws.on('close', () => {
     clients.delete(ws);
