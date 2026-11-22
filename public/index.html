@@ -61,7 +61,7 @@
   .case .case-price { font-size: 15px; font-weight: 700; color: var(--accent); }
   .case-info-btn { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); color: var(--dim); font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; touch-action: manipulation; }
   .case-info-btn::after { content: 'i'; font-style: italic; }
-  
+
   /* Мультиоткрытие */
   .multi-drop-card { max-width: 500px; width: 100%; }
   .multi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
@@ -106,7 +106,11 @@
   .battle-create-btn { padding: 14px; border-radius: 12px; border: none; background: linear-gradient(90deg, var(--accent), #00b894); color: #000; font-weight: 800; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; touch-action: manipulation; }
   .battle-item { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
   .battle-item .bi-top { display: flex; justify-content: space-between; align-items: center; }
-  .battle-item .bi-nick { font-weight: 700; font-size: 14px; }
+  .battle-item .bi-nick { font-weight: 700; font-size: 14px; display:flex; flex-direction:column; gap:2px; }
+  .bi-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
+  .bi-title.mill { background: linear-gradient(90deg, #fbbf24, #ff2d6f); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(251,191,36,0.3); }
+  .bi-title.pepe { color: #4ade80; text-shadow: 0 0 10px rgba(74,222,128,0.3); }
+  .bi-title.true { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
   .battle-item .bi-price { font-weight: 700; color: var(--accent); font-size: 14px; }
   .battle-item .bi-cases { display: flex; flex-wrap: wrap; gap: 4px; }
   .battle-item .bi-case { font-size: 11px; padding: 3px 7px; border-radius: 6px; background: var(--bg2); border: 1px solid var(--border); color: var(--dim); }
@@ -115,7 +119,7 @@
   .bi-join { background: var(--accent); color: #000; }
   .bi-cancel { background: transparent; border: 1px solid #ff2d6f; color: #ff2d6f; }
 
-  /* НОВАЯ ВКЛАДКА: ЗАДАНИЯ */
+  /* ЗАДАНИЯ */
   .tasks-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; padding-bottom: 20px; }
   .task-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
   .task-card.wide { grid-column: 1 / -1; }
@@ -166,13 +170,23 @@
   .info-row .ir-name { flex: 1; font-size: 13px; font-weight: 600; }
   .info-row .ir-price { font-size: 12px; color: var(--accent); font-weight: 700; }
   .picker-list { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; }
+  
+  /* ПРОФИЛЬ */
   .profile-card { background: var(--panel); border: 2px solid var(--accent); border-radius: 16px; padding: 26px 24px; max-width: 340px; width: 100%; display: flex; flex-direction: column; gap: 12px; text-align: center; box-shadow: 0 0 60px -10px var(--accent); }
-  .profile-nick { font-size: 22px; font-weight: 800; word-break: break-word; }
+  .profile-title { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+  .profile-title.mill { background: linear-gradient(90deg, #fbbf24, #ff2d6f); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .profile-title.pepe { color: #4ade80; }
+  .profile-title.true { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .profile-nick { font-size: 22px; font-weight: 800; word-break: break-word; line-height: 1.1; }
+  .profile-xp-bar { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+  .profile-xp-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
+  .profile-xp-text { font-size: 11px; color: var(--dim); font-weight: 700; }
   .profile-balance { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
   .profile-btn { padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-weight: 700; font-size: 14px; cursor: pointer; touch-action: manipulation; transition: all 0.15s; }
   .profile-btn:active { background: var(--border); }
   .profile-btn.accent { background: linear-gradient(90deg, var(--accent), #00b894); color: #000; border: none; }
   .profile-btn.big { padding: 18px; font-size: 16px; }
+  
   @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -302,7 +316,20 @@
 </div>
 
 <div class="overlay" id="battleResultOverlay"><div class="win-card" id="battleResultCard"><div class="win-icon" id="battleResultIcon"></div><div class="win-rar" id="battleResultRar"></div><div class="win-name" id="battleResultName"></div><div class="win-price" id="battleResultPrice"></div><button id="battleResultClose">Закрыть</button></div></div>
-<div class="overlay" id="profileOverlay"><div class="profile-card"><div class="profile-nick" id="profileNick">Ник</div><div class="profile-balance" id="profileBalance">0 ₽</div><button class="profile-btn" id="exportBtn">Экспорт</button><button class="profile-btn" id="importBtn">Импорт</button><div style="border-top: 1px solid var(--border); margin: 6px 0;"></div><button class="profile-btn accent big" id="earnBtn">Заработок +0.1 ₽</button><button class="profile-btn" id="profileClose" style="margin-top: 10px; border-color: transparent; color: var(--dim);">Закрыть</button></div></div>
+<div class="overlay" id="profileOverlay">
+  <div class="profile-card">
+    <div class="profile-title" id="profileTitle">НОВИЧОК</div>
+    <div class="profile-nick" id="profileNick">Ник</div>
+    <div class="profile-xp-bar"><div class="profile-xp-fill" id="profileXpFill"></div></div>
+    <div class="profile-xp-text" id="profileXpText">0 XP (Ур. 1)</div>
+    <div class="profile-balance" id="profileBalance">0 ₽</div>
+    <button class="profile-btn" id="exportBtn">Экспорт</button>
+    <button class="profile-btn" id="importBtn">Импорт</button>
+    <div style="border-top: 1px solid var(--border); margin: 6px 0;"></div>
+    <button class="profile-btn accent big" id="earnBtn">Заработок +0.1 ₽</button>
+    <button class="profile-btn" id="profileClose" style="margin-top: 10px; border-color: transparent; color: var(--dim);">Закрыть</button>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -333,21 +360,47 @@
     { icon: '🔥', name: 'Факел',                 price: 800 },
     { icon: '📖', name: 'Теоретический',         price: 1000 },
     { icon: '📅', name: 'Календарь',             price: 1000 },
+    { icon: '🐶', name: 'Снуп дог',              price: 1000 },
+    { icon: '🍭', name: 'Лол поп',               price: 1000 },
+    { icon: '💩', name: 'Брауни',                price: 1000 },
+    { icon: '🎭', name: 'Маска',                 price: 1500 },
     { icon: '👍', name: 'Хороший',               price: 2000 },
     { icon: '✔️', name: 'Отличный',              price: 3000 },
     { icon: '⭐️', name: 'Лучший',                price: 5000 },
+    { icon: '🎩', name: 'Папаха',                price: 5000 },
     { icon: '!',  name: 'Замечательный',         price: 10000 },
+    { icon: '🐴', name: 'Троянский конь',        price: 15000 },
     { icon: '!!', name: 'БРИЛЛИАНТ',             price: 25000 },
+    { icon: '🕶', name: 'Очки',                  price: 25000 },
+    { icon: '🐈', name: 'Скэйред кэт',           price: 50000 },
+    { icon: '🍑', name: 'Персик',                price: 50000 },
+    { icon: '🧢', name: 'Кепка',                 price: 67000 },
+    { icon: '💝', name: 'Херт локет',            price: 250000 },
     { icon: '🐸', name: 'Пепе',                  price: 1000000 }
   ];
-  
+
+  const LEVELS = [
+    { lvl: 1, xp: 0, mult: 1.0 },
+    { lvl: 2, xp: 1000, mult: 1.0 },
+    { lvl: 3, xp: 3500, mult: 1.0 },
+    { lvl: 4, xp: 8000, mult: 0.7 },
+    { lvl: 5, xp: 15000, mult: 0.55 },
+    { lvl: 6, xp: 24000, mult: 0.42 },
+    { lvl: 7, xp: 36000, mult: 0.33 },
+    { lvl: 8, xp: 43000, mult: 0.27 },
+    { lvl: 9, xp: 50000, mult: 0.17 },
+    { lvl: 10, xp: 100000, mult: 0.1 },
+    { lvl: 11, xp: 150000, mult: 0.065 },
+    { lvl: 12, xp: 200000, mult: 0 }
+  ];
+
   const $ = id => document.getElementById(id);
   const rand = (a, b) => a + Math.random() * (b - a);
   const fmt = n => n.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
   const fmtChance = (c) => { if (c == null) return '—'; const pct = c * 100; if (pct === 0) return '0.00%'; if (pct < 1) return pct.toFixed(2) + '%'; return pct.toFixed(1) + '%'; };
   const chanceColor = (chance) => { if (chance == null) return '#7a7a95'; if (chance === 0) return '#3a3a50'; const p = Math.max(0, Math.min(1, chance)); return `hsl(${p * 130}, 85%, 55%)`; };
 
-  const state = { playerId: localStorage.getItem('zd_pid'), nick: localStorage.getItem('zd_nick'), balance: 0, inventory: [], cases: [], battles: [], rolling: false, upgSource: null, upgTarget: null, upgRolling: false, goldActive: false, pendingCaseDrop: null, pendingUpgDrop: null, lastMultiCaseIds: null };
+  const state = { playerId: localStorage.getItem('zd_pid'), nick: localStorage.getItem('zd_nick'), balance: 0, inventory: [], cases: [], battles: [], xp: 0, lvl: 1, rolling: false, upgSource: null, upgTarget: null, upgRolling: false, goldActive: false, pendingCaseDrop: null, pendingUpgDrop: null, lastMultiCaseIds: null };
   let ws = null;
 
   function connect() {
@@ -368,9 +421,9 @@
   function handleMessage(msg) {
     switch (msg.type) {
       case 'hello_ok':
-        state.cases = msg.cases; state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.nick = msg.player.nick; renderAll(); break;
+        state.cases = msg.cases; state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.nick = msg.player.nick; state.xp = msg.player.xp; state.lvl = msg.player.lvl; renderAll(); break;
       case 'state':
-        state.balance = msg.player.balance; state.inventory = msg.player.inventory; renderBalance(); renderInventory(); updateCaseStates(); break;
+        state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.xp = msg.player.xp; state.lvl = msg.player.lvl; renderBalance(); renderInventory(); updateCaseStates(); break;
       case 'case_opened':
         if (msg.items.length === 1) {
           state.pendingCaseDrop = msg.items[0];
@@ -395,8 +448,35 @@
     }
   }
 
+  function getTitleFromLevel(lvl, balance, hasPepe) {
+    if (balance >= 1000000) return { text: 'MILLIONARE', cls: 'mill' };
+    if (hasPepe) return { text: 'PEPE', cls: 'pepe' };
+    if (lvl >= 12) return { text: 'TRUE ZAHARKA', cls: 'true' };
+    if (lvl >= 10) return { text: 'ПРОФИ', cls: '' };
+    if (lvl >= 5) return { text: 'ИГРОК', cls: '' };
+    return { text: 'НОВИЧОК', cls: '' };
+  }
+
   function renderAll() { renderBalance(); renderInventory(); renderCases(); renderUpgrader(); renderBattles(); updateCaseStates(); }
-  function renderBalance() { $('balance').textContent = fmt(state.balance); $('profileBalance').textContent = fmt(state.balance) + ' ₽'; }
+  function renderBalance() { 
+    $('balance').textContent = fmt(state.balance); 
+    $('profileBalance').textContent = fmt(state.balance) + ' ₽'; 
+    
+    // Профиль
+    $('profileNick').textContent = state.nick || 'Ник';
+    $('profileXpText').textContent = `${fmt(state.xp)} XP (Ур. ${state.lvl})`;
+    
+    const hasPepe = state.inventory.some(i => i.name === 'Пепе');
+    const title = getTitleFromLevel(state.lvl, state.balance, hasPepe);
+    const titleEl = $('profileTitle');
+    titleEl.textContent = title.text;
+    titleEl.className = 'profile-title ' + title.cls;
+
+    const curLvlXP = LEVELS.find(l => l.lvl === state.lvl)?.xp || 0;
+    const nextLvlXP = LEVELS.find(l => l.lvl === state.lvl + 1)?.xp || 999999999;
+    const progress = Math.max(0, Math.min(100, ((state.xp - curLvlXP) / (nextLvlXP - curLvlXP)) * 100));
+    $('profileXpFill').style.width = progress + '%';
+  }
   
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
@@ -460,16 +540,23 @@
       if (c) el.classList.toggle('disabled', state.balance < c.price || state.rolling);
     });
   }
-  function makeItem(rarityOrItem) { 
-    // Для рулетки: если передан предмет - возвращаем его, иначе рандом из базы
-    if (typeof rarityOrItem === 'object') return rarityOrItem;
-    const base = ITEMS[Math.floor(Math.random() * ITEMS.length)]; 
-    return { ...base, uid: Date.now() + Math.random() }; 
+  function makeItemFromCase(caseObj) {
+    if (!caseObj) {
+      const base = ITEMS[Math.floor(Math.random() * ITEMS.length)]; 
+      return { ...base, uid: Date.now() + Math.random() }; 
+    }
+    if (caseObj.isFree) {
+      if (Math.random() < 0.001) return { ...ITEMS[Math.floor(Math.random() * ITEMS.length)], uid: Date.now() + Math.random() };
+      return { icon: '🕳️', name: 'Ничего', price: 0, uid: Date.now() + Math.random() };
+    }
+    const item = caseObj.items[Math.floor(Math.random() * caseObj.items.length)];
+    return { ...item, uid: Date.now() + Math.random() };
   }
 
   function animateRollLocal(finalItem) {
+    const c = state.cases.find(x => x.id === state.lastMultiCaseIds?.[0] || x.id === 'hody');
     elTrack.innerHTML = ''; const items = [];
-    for (let i = 0; i < TRACK_LEN; i++) { if (i === WIN_INDEX) items.push(finalItem); else items.push(makeItem()); }
+    for (let i = 0; i < TRACK_LEN; i++) { if (i === WIN_INDEX) items.push(finalItem); else items.push(makeItemFromCase(c)); }
     items.forEach(it => { const div = document.createElement('div'); div.className = 'item'; div.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>`; elTrack.appendChild(div); });
     requestAnimationFrame(() => {
       const wrapW = elTrack.parentElement.clientWidth; const first = elTrack.children[0];
@@ -658,7 +745,22 @@
     if (state.battles.length === 0) { el.innerHTML = '<div class="empty">Открытых батлов нет.<br>Создай первый.</div>'; return; }
     state.battles.forEach(b => {
       const div = document.createElement('div'); div.className = 'battle-item'; const isOwn = b.creatorNick === state.nick;
-      div.innerHTML = `<div class="bi-top"><div class="bi-nick">${b.creatorNick}</div><div class="bi-price">${fmt(b.price)} ₽</div></div><div class="bi-cases">${b.cases.map(c => `<span class="bi-case">${c.icon} ${c.name}</span>`).join('')}</div><div class="bi-actions">${isOwn ? `<button class="bi-cancel" data-cancel="${b.id}">Отменить (возврат)</button>` : `<button class="bi-join" data-join="${b.id}">Войти</button>`}</div>`;
+      let titleClass = '';
+      if (b.creatorTitle === 'Millionare') titleClass = 'mill';
+      else if (b.creatorTitle === 'Pepe') titleClass = 'pepe';
+      else if (b.creatorTitle === 'True Zaharka') titleClass = 'true';
+
+      div.innerHTML = `
+        <div class="bi-top">
+          <div class="bi-nick">
+            <span class="bi-title ${titleClass}">${b.creatorTitle || 'Новичок'}</span>
+            <span>${b.creatorNick}</span>
+          </div>
+          <div class="bi-price">${fmt(b.price)} ₽</div>
+        </div>
+        <div class="bi-cases">${b.cases.map(c => `<span class="bi-case">${c.icon} ${c.name}</span>`).join('')}</div>
+        <div class="bi-actions">${isOwn ? `<button class="bi-cancel" data-cancel="${b.id}">Отменить (возврат)</button>` : `<button class="bi-join" data-join="${b.id}">Войти</button>`}</div>
+      `;
       el.appendChild(div);
     });
     el.querySelectorAll('[data-join]').forEach(e => e.addEventListener('click', () => send({ type: 'battle_join', battleId: e.dataset.join })));
@@ -718,8 +820,12 @@
     track.dataset.animating = 'true';
     const WIN_INDEX = 20; const TRACK_LEN = 40;
     track.innerHTML = '';
+    
+    // Берем предметы для анимации из первого кейса в батле
+    const c = state.cases.find(x => x.id === arenaState.battle.caseIds[0]) || state.cases[0];
+    
     for (let i = 0; i < TRACK_LEN; i++) {
-      let item = (i === WIN_INDEX) ? drops[Math.floor(Math.random() * drops.length)] : makeItem();
+      let item = (i === WIN_INDEX) ? drops[Math.floor(Math.random() * drops.length)] : makeItemFromCase(c);
       const div = document.createElement('div'); div.className = 'arena-v-item';
       div.innerHTML = `<span class="avi-icon">${item.icon}</span><span class="avi-name">${item.name}</span><span class="avi-price">${fmt(item.price)} ₽</span>`;
       track.appendChild(div);
@@ -782,7 +888,7 @@
     dailyLastClaim = Date.now(); localStorage.setItem('zd_daily_claim', dailyLastClaim);
   });
 
-  $('logoBtn').addEventListener('click', () => { $('profileNick').textContent = state.nick || 'Ник'; $('profileBalance').textContent = fmt(state.balance) + ' ₽'; $('profileOverlay').classList.add('show'); });
+  $('logoBtn').addEventListener('click', () => { renderBalance(); $('profileOverlay').classList.add('show'); });
   $('profileClose').addEventListener('click', () => $('profileOverlay').classList.remove('show'));
   $('earnBtn').addEventListener('click', () => send({ type: 'earn_money' }));
 
@@ -803,4 +909,4 @@
 })();
 </script>
 </body>
-</html>
+ </html>
