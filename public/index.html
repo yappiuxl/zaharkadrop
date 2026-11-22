@@ -59,7 +59,10 @@
     -webkit-text-fill-color: transparent;
     text-transform: uppercase;
     white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.1s;
   }
+  header h1:active { transform: scale(0.96); }
   .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .balance {
     font-size: 16px;
@@ -69,18 +72,6 @@
     white-space: nowrap;
   }
   .balance span { color: var(--dim); font-size: 11px; font-weight: 400; margin-right: 4px; }
-  .nick { font-size: 12px; color: var(--dim); }
-  .hbtn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--dim);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    cursor: pointer;
-    touch-action: manipulation;
-  }
-  .hbtn:active { border-color: var(--accent); color: var(--accent); }
 
   .tabs {
     display: flex;
@@ -392,6 +383,29 @@
   .picker-list { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; }
   .picker-section { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; color: var(--dim); padding: 8px 2px 2px; }
 
+  /* ПРОФИЛЬ */
+  .profile-card {
+    background: var(--panel); border: 2px solid var(--accent);
+    border-radius: 16px; padding: 26px 24px; max-width: 340px; width: 100%;
+    display: flex; flex-direction: column; gap: 12px; text-align: center;
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 60px -10px var(--accent);
+  }
+  .profile-nick { font-size: 22px; font-weight: 800; word-break: break-word; }
+  .profile-balance { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .profile-btn {
+    padding: 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--bg2); color: var(--text); font-weight: 700;
+    font-size: 14px; cursor: pointer; touch-action: manipulation;
+    transition: all 0.15s;
+  }
+  .profile-btn:active { background: var(--border); }
+  .profile-btn.accent {
+    background: linear-gradient(90deg, var(--accent), #00b894);
+    color: #000; border: none;
+  }
+  .profile-btn.big { padding: 18px; font-size: 16px; }
+
   @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -414,12 +428,9 @@
 <body>
 <div id="app">
   <header>
-    <h1>Захарка Дроп</h1>
+    <h1 id="logoBtn">Захарка Дроп</h1>
     <div class="header-right">
-      <div class="nick" id="nickLbl">—</div>
       <div class="balance"><span>Баланс</span><b id="balance">0</b> ₽</div>
-      <button class="hbtn" id="exportBtn">Экспорт</button>
-      <button class="hbtn" id="importBtn">Импорт</button>
     </div>
   </header>
 
@@ -586,6 +597,23 @@
   </div>
 </div>
 
+<!-- Модалка ПРОФИЛЯ -->
+<div class="overlay" id="profileOverlay">
+  <div class="profile-card">
+    <div class="profile-nick" id="profileNick">Ник</div>
+    <div class="profile-balance" id="profileBalance">0 ₽</div>
+    
+    <button class="profile-btn" id="exportBtn">Экспорт</button>
+    <button class="profile-btn" id="importBtn">Импорт</button>
+    
+    <div style="border-top: 1px solid var(--border); margin: 6px 0;"></div>
+    
+    <button class="profile-btn accent big" id="earnBtn">Заработок (КНО / ПКА) +0.1 ₽</button>
+    
+    <button class="profile-btn" id="profileClose" style="margin-top: 10px; border-color: transparent; color: var(--dim);">Закрыть</button>
+  </div>
+</div>
+
 <script>
 (() => {
   'use strict';
@@ -627,7 +655,7 @@
 
   const $ = id => document.getElementById(id);
   const rand = (a, b) => a + Math.random() * (b - a);
-  const fmt = n => n.toLocaleString('ru-RU');
+  const fmt = n => n.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
   const fmtChance = (c) => {
     if (c == null) return '—';
     const pct = c * 100;
@@ -704,7 +732,7 @@
         state.balance = msg.player.balance;
         state.inventory = msg.player.inventory;
         state.history = msg.player.history;
-        $('nickLbl').textContent = msg.player.nick;
+        state.nick = msg.player.nick;
         renderAll();
         break;
 
@@ -759,7 +787,10 @@
     updateCaseStates();
   }
 
-  function renderBalance() { $('balance').textContent = fmt(state.balance); }
+  function renderBalance() { 
+    $('balance').textContent = fmt(state.balance); 
+    $('profileBalance').textContent = fmt(state.balance) + ' ₽';
+  }
 
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
@@ -1415,6 +1446,21 @@
     $('battleResultOverlay').classList.remove('show');
   });
 
+  // ===== ПРОФИЛЬ =====
+  $('logoBtn').addEventListener('click', () => {
+    $('profileNick').textContent = state.nick || 'Ник';
+    $('profileBalance').textContent = fmt(state.balance) + ' ₽';
+    $('profileOverlay').classList.add('show');
+  });
+
+  $('profileClose').addEventListener('click', () => {
+    $('profileOverlay').classList.remove('show');
+  });
+
+  $('earnBtn').addEventListener('click', () => {
+    send({ type: 'earn_money' });
+  });
+
   // ===== ЭКСПОРТ / ИМПОРТ =====
   $('exportBtn').addEventListener('click', () => {
     window.location.href = '/api/export';
@@ -1454,4 +1500,4 @@
 })();
 </script>
 </body>
- </html>
+</html>
