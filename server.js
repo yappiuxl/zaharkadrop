@@ -19,7 +19,7 @@ const CHANCE_MIN = 0.0001;
 const CHANCE_MAX = 0.99;
 const BATTLE_TIMEOUT = 8000;
 
-// БАЗА ПРЕДМЕТОВ (БЕЗ РЕДКОСТЕЙ)
+// БАЗА ПРЕДМЕТОВ
 const ITEMS = [
   { icon: '??',  name: 'Зевок',                price: 1   },
   { icon: '♟️', name: 'Пешка',                 price: 5   },
@@ -46,12 +46,38 @@ const ITEMS = [
   { icon: '🔥', name: 'Факел',                 price: 800 },
   { icon: '📖', name: 'Теоретический',         price: 1000 },
   { icon: '📅', name: 'Календарь',             price: 1000 },
+  { icon: '🐶', name: 'Снуп дог',              price: 1000 },
+  { icon: '🍭', name: 'Лол поп',               price: 1000 },
+  { icon: '💩', name: 'Брауни',                price: 1000 },
+  { icon: '🎭', name: 'Маска',                 price: 1500 },
   { icon: '👍', name: 'Хороший',               price: 2000 },
   { icon: '✔️', name: 'Отличный',              price: 3000 },
   { icon: '⭐️', name: 'Лучший',                price: 5000 },
+  { icon: '🎩', name: 'Папаха',                price: 5000 },
   { icon: '!',  name: 'Замечательный',         price: 10000 },
+  { icon: '🐴', name: 'Троянский конь',        price: 15000 },
   { icon: '!!', name: 'БРИЛЛИАНТ',             price: 25000 },
+  { icon: '🕶', name: 'Очки',                  price: 25000 },
+  { icon: '🐈', name: 'Скэйред кэт',           price: 50000 },
+  { icon: '🍑', name: 'Персик',                price: 50000 },
+  { icon: '🧢', name: 'Кепка',                 price: 67000 },
+  { icon: '💝', name: 'Херт локет',            price: 250000 },
   { icon: '🐸', name: 'Пепе',                  price: 1000000 }
+];
+
+const LEVELS = [
+  { lvl: 1, xp: 0, mult: 1.0 },
+  { lvl: 2, xp: 1000, mult: 1.0, reward: { balance: 50 } },
+  { lvl: 3, xp: 3500, mult: 1.0, reward: { case: 'figury', count: 2, balance: 150 } },
+  { lvl: 4, xp: 8000, mult: 0.7, reward: { item: 'Вынужденный' } },
+  { lvl: 5, xp: 15000, mult: 0.55, reward: { case: 'podarki', count: 3, balance: 500 } },
+  { lvl: 6, xp: 24000, mult: 0.42, reward: { item: 'Факел' } },
+  { lvl: 7, xp: 36000, mult: 0.33, reward: { balance: 1000 } },
+  { lvl: 8, xp: 43000, mult: 0.27, reward: { item: 'Отличный', case: 'hody', count: 3 } },
+  { lvl: 9, xp: 50000, mult: 0.17, reward: { balance: 4000 } },
+  { lvl: 10, xp: 100000, mult: 0.1, reward: { item: 'Замечательный' } },
+  { lvl: 11, xp: 150000, mult: 0.065, reward: { balance: 10000 } },
+  { lvl: 12, xp: 200000, mult: 0, reward: { item: 'Персик' } }
 ];
 
 // КЕЙСЫ
@@ -92,9 +118,9 @@ const CASES = [
     id: 'nft', 
     name: 'Нфт', 
     icon: '🐸', 
-    price: 300000, 
-    desc: 'Шанс на Пепе',
-    items: ITEMS.filter(i => ['Факел', 'Календарь', 'Пепе'].includes(i.name))
+    price: 100000, 
+    desc: 'Все Нфт',
+    items: ITEMS.filter(i => ['Факел', 'Календарь', 'Снуп дог', 'Лол поп', 'Брауни', 'Маска', 'Папаха', 'Троянский конь', 'Очки', 'Скэйред кэт', 'Персик', 'Кепка', 'Херт локет', 'Пепе'].includes(i.name))
   },
   { 
     id: 'telegram', 
@@ -102,7 +128,7 @@ const CASES = [
     icon: '✈️', 
     price: 50000, 
     desc: 'Подарки и Нфт',
-    items: ITEMS.filter(i => ['Сердце', 'Мишка', 'Подарок', 'Роза', 'Торт', 'Букет', 'Ракета', 'Шампанское', 'Кубок', 'Алмаз', 'Кольцо', 'Факел', 'Календарь', 'Пепе'].includes(i.name))
+    items: ITEMS.filter(i => ['Сердце', 'Мишка', 'Подарок', 'Роза', 'Торт', 'Букет', 'Ракета', 'Шампанское', 'Кубок', 'Алмаз', 'Кольцо', 'Факел', 'Календарь', 'Снуп дог', 'Лол поп', 'Брауни', 'Маска', 'Папаха', 'Троянский конь', 'Очки', 'Скэйред кэт', 'Персик', 'Кепка', 'Херт локет', 'Пепе'].includes(i.name))
   },
   { 
     id: 'shahmaty', 
@@ -142,19 +168,12 @@ function saveData() {
 setInterval(saveData, SAVE_INTERVAL);
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
 function rollCase(caseObj) {
   if (caseObj.isFree) {
-    if (Math.random() < 0.001) { // 0.1% шанс
-      const item = pick(ITEMS);
-      return { ...item, uid: Date.now() + Math.random() };
-    } else {
-      return { icon: '🕳️', name: 'Ничего', price: 0, uid: Date.now() + Math.random() };
-    }
-  } else {
-    const base = pick(caseObj.items);
-    return { ...base, uid: Date.now() + Math.random() };
+    if (Math.random() < 0.001) return { ...pick(ITEMS), uid: Date.now() + Math.random() };
+    return { icon: '🕳️', name: 'Ничего', price: 0, uid: Date.now() + Math.random() };
   }
+  return { ...pick(caseObj.items), uid: Date.now() + Math.random() };
 }
 
 function calcChance(source, target) {
@@ -167,22 +186,54 @@ function calcChance(source, target) {
 
 function getGoldItem(target) {
   const wanted = target.price * GOLD_MULT;
-  let best = null;
-  let bestDiff = Infinity;
+  let best = null; let bestDiff = Infinity;
   ITEMS.forEach(it => {
     if (it.price < wanted) return;
     const diff = it.price - wanted;
-    if (diff < bestDiff) {
-      bestDiff = diff;
-      best = it;
-    }
+    if (diff < bestDiff) { bestDiff = diff; best = it; }
   });
-  if (!best) best = ITEMS[ITEMS.length - 1];
-  return best;
+  return best || ITEMS[ITEMS.length - 1];
+}
+
+function addXP(p, amount) {
+  if (p.lvl >= 12) return;
+  const lvlData = LEVELS.find(l => l.lvl === p.lvl) || LEVELS[0];
+  const finalXP = Math.floor(amount * lvlData.mult);
+  p.xp += finalXP;
+  
+  let newLvl = p.lvl;
+  for (const l of LEVELS) {
+    if (p.xp >= l.xp) newLvl = l.lvl;
+  }
+  
+  if (newLvl > p.lvl) {
+    // Выдача наград за все пропущенные уровни
+    for (let i = p.lvl + 1; i <= newLvl; i++) {
+      const reward = LEVELS.find(l => l.lvl === i)?.reward;
+      if (reward) {
+        if (reward.balance) p.balance += reward.balance;
+        if (reward.item) {
+          const base = ITEMS.find(it => it.name === reward.item);
+          if (base) p.inventory.push({ ...base, uid: Date.now() + Math.random() });
+        }
+        if (reward.case) {
+          const c = CASES.find(c => c.id === reward.case);
+          if (c) {
+            for (let k = 0; k < (reward.count || 1); k++) {
+              p.inventory.push(rollCase(c));
+            }
+          }
+        }
+      }
+    }
+    p.lvl = newLvl;
+  }
 }
 
 function getPlayer(pid) { return state.players[pid] || null; }
-function publicPlayer(p) { return { nick: p.nick, balance: p.balance, inventory: p.inventory, history: p.history }; }
+function publicPlayer(p) { 
+  return { nick: p.nick, balance: p.balance, inventory: p.inventory, history: p.history, xp: p.xp || 0, lvl: p.lvl || 1 }; 
+}
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png' };
 
@@ -232,8 +283,22 @@ function send(ws, obj) { if (ws.readyState === 1) ws.send(JSON.stringify(obj)); 
 function broadcastBattles() {
   const list = Object.values(state.battles)
     .filter(b => b.status === 'waiting')
-    .map(b => ({ id: b.id, creatorNick: b.creatorNick, caseIds: b.caseIds, cases: b.caseIds.map(id => CASES.find(c => c.id === id)).filter(Boolean), price: b.price, createdAt: b.createdAt }));
+    .map(b => {
+      const creator = getPlayer(b.creatorId);
+      return { id: b.id, creatorNick: b.creatorNick, creatorLvl: creator ? (creator.lvl || 1) : 1, creatorTitle: getTitle(creator), caseIds: b.caseIds, cases: b.caseIds.map(id => CASES.find(c => c.id === id)).filter(Boolean), price: b.price, createdAt: b.createdAt };
+    });
   broadcastAll({ type: 'battles', battles: list });
+}
+
+function getTitle(p) {
+  if (!p) return 'Новичок';
+  if (p.balance >= 1000000) return 'Millionare';
+  const hasPepe = p.inventory.some(i => i.name === 'Пепе');
+  if (hasPepe) return 'Pepe';
+  if ((p.lvl || 1) >= 12) return 'True Zaharka';
+  if (p.lvl >= 10) return 'Профи';
+  if (p.lvl >= 5) return 'Игрок';
+  return 'Новичок';
 }
 
 function sendStateTo(ws, pid) {
@@ -256,7 +321,7 @@ wss.on('connection', (ws) => {
       
       let p = getPlayer(pid);
       if (!p) {
-        p = { nick, balance: START_BALANCE, inventory: [], history: [], freeLastOpened: 0, freeCountToday: 0 };
+        p = { nick, balance: START_BALANCE, inventory: [], history: [], xp: 0, lvl: 1, freeLastOpened: 0, freeCountToday: 0 };
         state.players[pid] = p;
       } else p.nick = nick;
       
@@ -275,7 +340,6 @@ wss.on('connection', (ws) => {
     if (msg.type === 'get_state') { sendStateTo(ws, c.playerId); return; }
     if (msg.type === 'earn_money') { p.balance += 0.1; sendStateTo(ws, c.playerId); saveData(); return; }
 
-    // ===== ЗАДАНИЯ =====
     if (msg.type === 'claim_task') {
       const taskId = msg.taskId;
       let itemName, itemPrice, itemIcon;
@@ -290,9 +354,7 @@ wss.on('connection', (ws) => {
       const now = Date.now();
       const cooldown = 86400000;
       
-      if (p.taskClaims[taskId] && now - p.taskClaims[taskId] < cooldown) {
-        return send(ws, { type: 'error', msg: 'Уже получено' });
-      }
+      if (p.taskClaims[taskId] && now - p.taskClaims[taskId] < cooldown) return send(ws, { type: 'error', msg: 'Уже получено' });
       
       p.taskClaims[taskId] = now;
       const newItem = { icon: itemIcon, name: itemName, price: itemPrice, uid: now + Math.random() };
@@ -307,17 +369,11 @@ wss.on('connection', (ws) => {
     if (msg.type === 'open_case') {
       const caseIds = Array.isArray(msg.caseIds) ? msg.caseIds : [msg.caseId];
       
-      // Проверка бесплатного кейса
       const freeCase = caseIds.find(id => id === 'free');
       if (freeCase) {
         const today = new Date().toDateString();
-        if (p.freeDate !== today) {
-          p.freeDate = today;
-          p.freeCountToday = 0;
-        }
-        if (p.freeCountToday >= 5) {
-          return send(ws, { type: 'error', msg: 'Лимит бесплатных кейсов: 5 в день' });
-        }
+        if (p.freeDate !== today) { p.freeDate = today; p.freeCountToday = 0; }
+        if (p.freeCountToday >= 5) return send(ws, { type: 'error', msg: 'Лимит бесплатных кейсов: 5 в день' });
         p.freeCountToday++;
       }
 
@@ -341,6 +397,8 @@ wss.on('connection', (ws) => {
         items.push(item);
       }
       
+      addXP(p, Math.floor(totalCost / 10)); // 1 XP за 10₽
+      
       sendStateTo(ws, c.playerId);
       send(ws, { type: 'case_opened', items });
       saveData();
@@ -349,35 +407,17 @@ wss.on('connection', (ws) => {
 
     if (msg.type === 'sell_item') {
       const idx = p.inventory.findIndex(i => i.uid === msg.uid);
-      if (idx !== -1) {
-        p.balance += p.inventory[idx].price;
-        p.inventory.splice(idx, 1);
-        sendStateTo(ws, c.playerId);
-        saveData();
-      }
+      if (idx !== -1) { p.balance += p.inventory[idx].price; p.inventory.splice(idx, 1); sendStateTo(ws, c.playerId); saveData(); }
       return;
     }
     if (msg.type === 'sell_all') {
       p.balance += p.inventory.reduce((s, i) => s + i.price, 0);
-      p.inventory = [];
-      sendStateTo(ws, c.playerId);
-      saveData();
-      return;
+      p.inventory = []; sendStateTo(ws, c.playerId); saveData(); return;
     }
     if (msg.type === 'sell_many') {
-      const uids = msg.uids || [];
-      let sum = 0;
-      uids.forEach(uid => {
-        const idx = p.inventory.findIndex(i => i.uid === uid);
-        if (idx !== -1) {
-          sum += p.inventory[idx].price;
-          p.inventory.splice(idx, 1);
-        }
-      });
-      p.balance += sum;
-      sendStateTo(ws, c.playerId);
-      saveData();
-      return;
+      const uids = msg.uids || []; let sum = 0;
+      uids.forEach(uid => { const idx = p.inventory.findIndex(i => i.uid === uid); if (idx !== -1) { sum += p.inventory[idx].price; p.inventory.splice(idx, 1); } });
+      p.balance += sum; sendStateTo(ws, c.playerId); saveData(); return;
     }
 
     if (msg.type === 'upgrade') {
@@ -415,19 +455,21 @@ wss.on('connection', (ws) => {
       p.history.unshift({ result, fromIcon: source.icon, fromName: source.name, toIcon: wonItem ? wonItem.icon : target.icon, toName: wonItem ? wonItem.name : target.name, chance: (chance * 100).toFixed(2) + '%', gain: wonItem ? wonItem.price - source.price : 0, loss: result === 'lose' ? source.price : 0 });
       if (p.history.length > MAX_HISTORY) p.history.length = MAX_HISTORY;
       
+      addXP(p, Math.floor(source.price / 10)); // 1 XP за 10₽ ставки
+      
       sendStateTo(ws, c.playerId);
       send(ws, { type: 'upgrade_result', result, wonItem, chance, goldActive, target, source });
       saveData();
       return;
     }
 
-    // БАТЛЫ (без изменений, просто чтобы не падало)
     if (msg.type === 'battle_create') {
       const caseIds = (msg.caseIds || []).filter(id => CASES.some(c => c.id === id)).slice(0, 20);
       if (caseIds.length === 0) return send(ws, { type: 'error', msg: 'no cases' });
       const price = caseIds.reduce((s, id) => s + CASES.find(c => c.id === id).price, 0);
       if (p.balance < price) return send(ws, { type: 'error', msg: 'no money' });
       p.balance -= price;
+      addXP(p, Math.floor(price / 10)); // 1 XP за 10₽
       const id = crypto.randomUUID();
       state.battles[id] = { id, creatorId: c.playerId, creatorNick: p.nick, caseIds, price, status: 'waiting', joinerId: null, joinerNick: null, drops: {}, createdAt: Date.now() };
       sendStateTo(ws, c.playerId);
@@ -454,6 +496,8 @@ wss.on('connection', (ws) => {
       if (p.balance < b.price) return send(ws, { type: 'error', msg: 'no money' });
       
       p.balance -= b.price;
+      addXP(p, Math.floor(b.price / 10)); // 1 XP за 10₽
+      
       b.joinerId = c.playerId;
       b.joinerNick = p.nick;
       b.status = 'playing';
@@ -494,11 +538,8 @@ wss.on('connection', (ws) => {
             });
           }
         });
-        if (changed && curB.drops[curB.creatorId] && curB.drops[curB.joinerId]) {
-          finishBattle(curB);
-        }
+        if (changed && curB.drops[curB.creatorId] && curB.drops[curB.joinerId]) finishBattle(curB);
       }, BATTLE_TIMEOUT);
-
       return;
     }
 
@@ -518,15 +559,11 @@ wss.on('connection', (ws) => {
       const participants = [b.creatorId, b.joinerId];
       participants.forEach(pid => {
         for (const [w, info] of clients) {
-          if (info.playerId === pid) {
-            send(w, { type: 'battle_progress', battleId: b.id, playerId: c.playerId, drops });
-          }
+          if (info.playerId === pid) send(w, { type: 'battle_progress', battleId: b.id, playerId: c.playerId, drops });
         }
       });
 
-      if (b.drops[b.creatorId] && b.drops[b.joinerId]) {
-        finishBattle(b);
-      }
+      if (b.drops[b.creatorId] && b.drops[b.joinerId]) finishBattle(b);
       saveData();
       return;
     }
