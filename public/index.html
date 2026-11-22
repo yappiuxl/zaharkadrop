@@ -278,53 +278,81 @@
   .bi-join { background: var(--accent); color: #000; }
   .bi-cancel { background: transparent; border: 1px solid var(--c-true); color: var(--c-true); }
 
+  /* АРЕНА БАТЛА */
   .battle-arena {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
     display: none; flex-direction: column; z-index: 200;
-    padding: 12px; gap: 10px; backdrop-filter: blur(6px);
+    padding: 12px; gap: 10px; backdrop-filter: blur(8px);
   }
   .battle-arena.show { display: flex; }
+  
+  .arena-countdown {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.8); z-index: 300; font-size: 120px; font-weight: 900;
+    color: var(--accent); text-shadow: 0 0 40px var(--accent);
+    animation: popIn 0.5s ease-out;
+  }
+  
   .arena-head {
     display: flex; justify-content: space-between; align-items: center;
     padding: 10px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    flex-shrink: 0;
   }
   .arena-head h2 { font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
+  
   .arena-players {
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; min-height: 0;
   }
   .arena-side {
     background: var(--panel); border: 1px solid var(--border);
     border-radius: 12px; padding: 10px; display: flex;
-    flex-direction: column; gap: 8px; min-height: 0;
+    flex-direction: column; gap: 8px; min-height: 0; overflow: hidden;
   }
   .arena-side .as-name {
     font-weight: 700; font-size: 14px; text-align: center;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    flex-shrink: 0;
   }
-  .arena-side .as-sum { text-align: center; color: var(--accent); font-weight: 700; font-size: 14px; }
-  .arena-side .as-drop {
-    flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
+  .arena-side .as-sum { text-align: center; color: var(--accent); font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  
+  /* Вертикальная рулетка */
+  .arena-vert-wrap {
+    flex: 1; position: relative; background: var(--bg2);
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; min-height: 0;
   }
-  .arena-side .as-roll {
-    padding: 10px; border-radius: 8px; border: none;
-    background: var(--accent); color: #000; font-weight: 700;
-    font-size: 13px; cursor: pointer; touch-action: manipulation;
+  .arena-vert-wrap::before, .arena-vert-wrap::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 40px; z-index: 5; pointer-events: none;
   }
-  .arena-side .as-roll:disabled { opacity: 0.4; cursor: not-allowed; }
-  .arena-drop-item {
-    display: flex; align-items: center; gap: 6px;
-    padding: 5px 8px; border-radius: 6px; background: var(--bg2);
-    border-left: 3px solid var(--rar); font-size: 11px;
+  .arena-vert-wrap::before { top: 0; background: linear-gradient(180deg, var(--bg2), transparent); }
+  .arena-vert-wrap::after { bottom: 0; background: linear-gradient(0deg, var(--bg2), transparent); }
+  
+  .arena-vert-marker {
+    position: absolute; top: 50%; left: 0; right: 0; height: 3px;
+    background: var(--accent); transform: translateY(-50%); z-index: 10;
+    box-shadow: 0 0 15px var(--accent);
   }
-  .arena-drop-item.kaka { --rar: var(--c-kaka); }
-  .arena-drop-item.norm { --rar: var(--c-norm); }
-  .arena-drop-item.rare { --rar: var(--c-rare); }
-  .arena-drop-item.epic { --rar: var(--c-epic); }
-  .arena-drop-item.legend { --rar: var(--c-legend); }
-  .arena-drop-item.true { --rar: var(--c-true); }
-  .arena-drop-item .adi-icon { font-size: 14px; }
-  .arena-drop-item .adi-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .arena-drop-item .adi-price { color: var(--accent); font-weight: 700; }
+  
+  .arena-vert-track {
+    display: flex; flex-direction: column; width: 100%;
+    position: absolute; top: 0; left: 0; will-change: transform;
+  }
+  .arena-v-item {
+    flex-shrink: 0; width: 100%; height: 60px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2); position: relative;
+    font-size: 12px; font-weight: 700;
+  }
+  .arena-v-item .avi-icon { font-size: 20px; }
+  .arena-v-item .avi-name { flex: 1; text-align: center; }
+  .arena-v-item .avi-price { color: var(--accent); }
+  .arena-v-item.kaka { border-left: 3px solid var(--c-kaka); }
+  .arena-v-item.norm { border-left: 3px solid var(--c-norm); }
+  .arena-v-item.rare { border-left: 3px solid var(--c-rare); }
+  .arena-v-item.epic { border-left: 3px solid var(--c-epic); }
+  .arena-v-item.legend { border-left: 3px solid var(--c-legend); }
+  .arena-v-item.true { border-left: 3px solid var(--c-true); }
 
   /* Модалки */
   .overlay {
@@ -421,7 +449,7 @@
     .case .case-icon { font-size: 32px; }
     .wheel-wrap { width: 110px; height: 110px; }
     .upg-slot { max-width: 110px; }
-    .arena-players { grid-template-columns: 1fr; }
+    .arena-countdown { font-size: 80px; }
   }
 </style>
 </head>
@@ -564,24 +592,30 @@
   </div>
 </div>
 
-<!-- Арена батла -->
+<!-- АРЕНА БАТЛА -->
 <div class="battle-arena" id="battleArena">
+  <div class="arena-countdown" id="arenaCountdown" style="display:none;">5</div>
+  
   <div class="arena-head">
     <h2>Батл</h2>
     <div style="font-size:12px;color:var(--dim);" id="arenaStatus">Ожидание...</div>
   </div>
   <div class="arena-players">
-    <div class="arena-side" id="arenaLeft">
+    <div class="arena-side">
       <div class="as-name" id="arenaLeftName">—</div>
       <div class="as-sum" id="arenaLeftSum">0 ₽</div>
-      <div class="as-drop" id="arenaLeftDrop"></div>
-      <button class="as-roll" id="arenaLeftRoll">Крутить</button>
+      <div class="arena-vert-wrap">
+        <div class="arena-vert-marker"></div>
+        <div class="arena-vert-track" id="arenaLeftTrack"></div>
+      </div>
     </div>
-    <div class="arena-side" id="arenaRight">
+    <div class="arena-side">
       <div class="as-name" id="arenaRightName">—</div>
       <div class="as-sum" id="arenaRightSum">0 ₽</div>
-      <div class="as-drop" id="arenaRightDrop"></div>
-      <button class="as-roll" id="arenaRightRoll">Крутить</button>
+      <div class="arena-vert-wrap">
+        <div class="arena-vert-marker"></div>
+        <div class="arena-vert-track" id="arenaRightTrack"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -684,9 +718,6 @@
     upgRolling: false,
     goldActive: false,
     currentBattle: null,
-    myDropDone: false,
-    oppDropDone: false,
-    lastBattleId: null,
     pendingCaseDrop: null,
     pendingUpgDrop: null
   };
@@ -761,7 +792,7 @@
         break;
 
       case 'battle_start':
-        openArena(msg.battle);
+        startBattleArena(msg.battle);
         break;
 
       case 'battle_progress':
@@ -1362,18 +1393,15 @@
     $('battleCreateOverlay').classList.remove('show');
   });
 
-  // ===== АРЕНА =====
+  // ===== АРЕНА БАТЛА =====
   let arenaState = null;
 
-  function openArena(battle) {
-    arenaState = {
-      battle,
-      myId: state.playerId,
-      iRolled: false
-    };
-    state.currentBattle = battle;
+  function startBattleArena(battle) {
+    // Блокируем кнопку в батлах, пока играем
+    document.querySelectorAll('.battle-item button').forEach(b => b.disabled = true);
+    
     $('battleArena').classList.add('show');
-    $('arenaStatus').textContent = 'Выбери и крути!';
+    $('arenaStatus').textContent = 'Приготовьтесь!';
 
     const isCreator = state.playerId === battle.creatorId;
     const myNick = isCreator ? battle.creatorNick : battle.joinerNick;
@@ -1383,67 +1411,148 @@
     $('arenaRightName').textContent = oppNick;
     $('arenaLeftSum').textContent = '0 ₽';
     $('arenaRightSum').textContent = '0 ₽';
-    $('arenaLeftDrop').innerHTML = '';
-    $('arenaRightDrop').innerHTML = '';
-    $('arenaLeftRoll').disabled = false;
-    $('arenaRightRoll').disabled = true;
-    $('arenaRightRoll').textContent = 'Ждём...';
-    $('arenaLeftRoll').textContent = 'Крутить';
+    $('arenaLeftTrack').innerHTML = '';
+    $('arenaRightTrack').innerHTML = '';
 
-    const rollBtn = $('arenaLeftRoll');
-    rollBtn.onclick = () => {
-      if (arenaState.iRolled) return;
-      arenaState.iRolled = true;
-      rollBtn.disabled = true;
-      rollBtn.textContent = 'Крутим...';
-      send({ type: 'battle_roll', battleId: arenaState.battle.id });
+    arenaState = {
+      battle,
+      myId: state.playerId,
+      myDrops: null,
+      oppDrops: null,
+      animDone: false
     };
+
+    // Обратный отсчёт
+    let count = 5;
+    const countEl = $('arenaCountdown');
+    countEl.style.display = 'flex';
+    countEl.textContent = count;
+
+    const timer = setInterval(() => {
+      count--;
+      if (count > 0) {
+        countEl.textContent = count;
+        countEl.style.animation = 'none';
+        void countEl.offsetWidth;
+        countEl.style.animation = 'popIn 0.5s ease-out';
+      } else {
+        clearInterval(timer);
+        countEl.style.display = 'none';
+        $('arenaStatus').textContent = 'Крутим!';
+        
+        // Запускаем анимацию (сервер уже начал считать, когда второй зашёл)
+        // Но анимацию запускаем по команде, чтобы визуально совпадало
+        if (arenaState.myDrops) startVerticalRoll(arenaState.myDrops, 'arenaLeftTrack');
+        if (arenaState.oppDrops) startVerticalRoll(arenaState.oppDrops, 'arenaRightTrack');
+        checkArenaFinish();
+      }
+    }, 1000);
   }
 
   function onBattleProgress(msg) {
     if (!arenaState || msg.battleId !== arenaState.battle.id) return;
     const isMe = msg.playerId === state.playerId;
-    const targetDrop = isMe ? $('arenaLeftDrop') : $('arenaRightDrop');
-    const targetSum = isMe ? $('arenaLeftSum') : $('arenaRightSum');
-    targetDrop.innerHTML = '';
-    let sum = 0;
-    msg.drops.forEach(it => {
-      sum += it.price;
-      const d = document.createElement('div');
-      d.className = 'arena-drop-item ' + it.rarity;
-      d.innerHTML = `<div class="adi-icon">${it.icon}</div><div class="adi-name">${it.name}</div><div class="adi-price">${fmt(it.price)} ₽</div>`;
-      targetDrop.appendChild(d);
-    });
-    targetSum.textContent = fmt(sum) + ' ₽';
-    if (!isMe) {
-      $('arenaStatus').textContent = 'Соперник крутит...';
-    } else {
-      $('arenaStatus').textContent = 'Ждём соперника...';
+    if (isMe) arenaState.myDrops = msg.drops;
+    else arenaState.oppDrops = msg.drops;
+
+    // Показываем итоговые суммы сразу
+    let sum = msg.drops.reduce((s, i) => s + i.price, 0);
+    if (isMe) $('arenaLeftSum').textContent = fmt(sum) + ' ₽';
+    else $('arenaRightSum').textContent = fmt(sum) + ' ₽';
+
+    // Если отсчёт закончился (countdown скрыт), запускаем анимацию сразу
+    if ($('arenaCountdown').style.display === 'none' || $('arenaCountdown').style.display === '') {
+      startVerticalRoll(msg.drops, isMe ? 'arenaLeftTrack' : 'arenaRightTrack');
     }
+    checkArenaFinish();
+  }
+
+  function startVerticalRoll(drops, trackId) {
+    const track = $(trackId);
+    if (!track || track.dataset.animating === 'true') return;
+    track.dataset.animating = 'true';
+    
+    const WIN_INDEX = 20;
+    const TRACK_LEN = 40;
+    
+    // Заполняем трек
+    track.innerHTML = '';
+    for (let i = 0; i < TRACK_LEN; i++) {
+      let item;
+      if (i === WIN_INDEX) {
+        item = drops[Math.floor(Math.random() * drops.length)];
+      } else {
+        item = makeItem(pickRandomRarity());
+      }
+      const div = document.createElement('div');
+      div.className = 'arena-v-item ' + item.rarity;
+      div.innerHTML = `
+        <span class="avi-icon">${item.icon}</span>
+        <span class="avi-name">${item.name}</span>
+        <span class="avi-price">${fmt(item.price)} ₽</span>
+      `;
+      track.appendChild(div);
+    }
+
+    requestAnimationFrame(() => {
+      const wrapH = track.parentElement.clientHeight;
+      const itemH = 60; // height: 60px в CSS
+      const winY = WIN_INDEX * itemH;
+      const jitter = rand(-itemH * 0.3, itemH * 0.3);
+      const finalY = -(winY + itemH / 2 - wrapH / 2) + jitter;
+      
+      track.style.transition = 'none';
+      track.style.transform = 'translateY(0px)';
+      void track.offsetWidth;
+      
+      const duration = 4000;
+      track.style.transition = `transform ${duration}ms cubic-bezier(0.15, 0.9, 0.25, 1)`;
+      track.style.transform = `translateY(${finalY}px)`;
+    });
+  }
+
+  function checkArenaFinish() {
+    if (!arenaState) return;
+    // Если оба дропа пришли и анимации запущены, ждём конца
+    // Сервер пришлёт battle_finish через 4 сек
   }
 
   function onBattleFinish(msg) {
     if (!arenaState || msg.battleId !== arenaState.battle.id) return;
+    
+    // Останавливаем анимации
     $('arenaStatus').textContent = 'Батл завершён!';
-    $('arenaLeftRoll').disabled = true;
-    $('arenaRightRoll').disabled = true;
-
+    
     setTimeout(() => {
       $('battleArena').classList.remove('show');
       const iWon = msg.winnerId === state.playerId;
+      
+      // Обновляем инвентарь и баланс
+      if (iWon) {
+        // Победитель получает все предметы (сервер уже зачислил)
+        // Просто перерисовываем инвентарь
+        send({ type: 'get_state' }); // Если такой команды нет, можно просто подождать следующий 'state' от сервера
+      }
+
       $('battleResultCard').style.setProperty('--rar', iWon ? '#fbbf24' : '#ff2d6f');
       $('battleResultIcon').textContent = iWon ? '🏆' : '💀';
       $('battleResultRar').textContent = iWon ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
       $('battleResultRar').style.color = iWon ? '#fbbf24' : '#ff2d6f';
       $('battleResultName').textContent = iWon ? 'Ты забираешь всё!' : 'Ты остался ни с чем';
       $('battleResultPrice').textContent = `Твой дроп: ${fmt(msg.creatorId === state.playerId ? msg.cSum : msg.jSum)} ₽ · Соперника: ${fmt(msg.creatorId === state.playerId ? msg.jSum : msg.cSum)} ₽`;
+      
       $('battleResultOverlay').classList.add('show');
       arenaState = null;
-    }, 1500);
+      
+      // Разблокируем кнопки в батлах
+      document.querySelectorAll('.battle-item button').forEach(b => b.disabled = false);
+    }, 4200); // Ждём окончания анимации (4 сек) + запас
   }
 
   $('battleResultClose').addEventListener('click', () => {
     $('battleResultOverlay').classList.remove('show');
+    // Обновляем инвентарь на всякий случай
+    send({ type: 'get_state' });
   });
 
   // ===== ПРОФИЛЬ =====
@@ -1500,4 +1609,4 @@
 })();
 </script>
 </body>
-       </html>
+</html>
