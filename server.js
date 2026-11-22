@@ -490,6 +490,14 @@ wss.on('connection', (ws) => {
     }
   });
 
+  // ===== Заработок (КНО/ПКА) =====
+if (msg.type === 'earn_money') {
+  p.balance += 0.1;
+  sendStateTo(ws, c.playerId);
+  saveData();
+  return;
+}
+
   ws.on('close', () => {
     clients.delete(ws);
   });
