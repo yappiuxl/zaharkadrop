@@ -263,7 +263,7 @@ wss.on('connection', (ws) => {
   if (taskId === '10m') { itemName = 'Упущенная возможность'; itemPrice = 10; itemRarity = 'kaka'; }
   else if (taskId === '30m') { itemName = 'Неточность'; itemPrice = 100; itemRarity = 'kaka'; }
   else if (taskId === '60m') { itemName = 'Вынужденный'; itemPrice = 500; itemRarity = 'norm'; }
-  else if (taskId === 'daily') { itemName = 'Ошибка'; itemPrice = 50; itemRarity = 'kaka'; }
+  else if (taskId === 'daily') { itemName = 'Зевок'; itemPrice = 1; itemRarity = 'kaka'; }
   else return;
 
   // Защита от накрутки: 1 раз в сутки для всех
