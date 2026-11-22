@@ -305,7 +305,6 @@
   }
   .bi-join { background: var(--accent); color: #000; }
   .bi-cancel { background: transparent; border: 1px solid var(--c-true); color: var(--c-true); }
-  .bi-own { background: var(--bg2); border: 1px solid var(--border); color: var(--dim); }
 
   .battle-arena {
     position: fixed; inset: 0; background: rgba(0,0,0,0.92);
@@ -664,7 +663,6 @@
     return `hsl(${p * 130}, 85%, 55%)`;
   };
 
-  // ===== STATE =====
   const state = {
     playerId: localStorage.getItem('zd_pid'),
     nick: localStorage.getItem('zd_nick'),
@@ -678,17 +676,17 @@
     upgTarget: null,
     upgRolling: false,
     goldActive: false,
-    // battle
     currentBattle: null,
     myDropDone: false,
     oppDropDone: false,
-    lastBattleId: null
+    lastBattleId: null,
+    pendingCaseDrop: null, // <- сохраняем результат кейса для анимации
+    pendingUpgDrop: null   // <- сохраняем результат апгрейда
   };
 
   let ws = null;
   let reconnectTimer = null;
 
-  // ===== WS =====
   function connect() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(proto + '//' + location.host);
@@ -742,13 +740,14 @@
         break;
 
       case 'case_opened':
-        showWin(msg.item);
-        state.rolling = false;
-        updateCaseStates();
+        // НЕ показываем сразу, сохраняем в pending и крутим рулетку
+        state.pendingCaseDrop = msg.item;
+        animateRollLocal(state.pendingCaseDrop);
         break;
 
       case 'upgrade_result':
-        showUpgradeResult(msg);
+        // То же самое для апгрейда
+        state.pendingUpgDrop = msg;
         break;
 
       case 'battles':
@@ -857,8 +856,6 @@
         state.rolling = true;
         updateCaseStates();
         send({ type: 'open_case', caseId: c.id });
-        // Заглушка-рулетка (реальный дроп придёт с сервера)
-        animateRollLocal(c);
       });
     });
     el.querySelectorAll('[data-info]').forEach(e => {
@@ -896,11 +893,11 @@
     return 'kaka';
   }
 
-  function animateRollLocal(caseObj) {
+  function animateRollLocal(finalItem) {
     elTrack.innerHTML = '';
     const items = [];
     for (let i = 0; i < TRACK_LEN; i++) {
-      if (i === WIN_INDEX) items.push(makeItem(pickRandomRarity()));
+      if (i === WIN_INDEX) items.push(finalItem);
       else items.push(makeItem(pickRandomRarity()));
     }
     items.forEach(it => {
@@ -924,6 +921,13 @@
       const duration = rand(3800, 4600);
       elTrack.style.transition = `transform ${duration}ms cubic-bezier(0.12, 0.8, 0.2, 1)`;
       elTrack.style.transform = `translateX(${finalX}px)`;
+
+      // Когда анимация завершилась - показываем результат
+      setTimeout(() => {
+        state.rolling = false;
+        updateCaseStates();
+        showWin(finalItem);
+      }, duration + 100);
     });
   }
 
@@ -948,7 +952,6 @@
     $('infoTitle').textContent = c.icon + ' ' + c.name;
     $('infoSub').textContent = 'Цена: ' + fmt(c.price) + ' ₽';
     $('infoList').innerHTML = '';
-    // у клиента весов нет, покажем просто список предметов
     RARITY_ORDER.forEach(rar => {
       const header = document.createElement('div');
       header.style.cssText = 'font-size:11px;letter-spacing:1px;text-transform:uppercase;color:' + RARITIES[rar].color + ';font-weight:700;margin:8px 2px 2px;';
@@ -994,7 +997,6 @@
     return Math.min(0.99, chance);
   }
 
-  // геометрия колеса
   const WHEEL_R = 48, WHEEL_C = 50;
   const GOLD_CHANCE = 0.4, GOLD_SIZE = 0.10, GOLD_MIN_RATIO = 0.8;
 
@@ -1223,9 +1225,9 @@
     send({ type: 'upgrade', sourceUid: source.uid, target: { rarity: target.rarity, icon: target.icon, name: target.name, price: target.price } });
   });
 
-  function showUpgradeResult(msg) {
-    const { result, wonItem, chance, target, goldActive } = msg;
-    // анимация колеса
+  // Функция, которая запускается после получения ответа от сервера
+  function spinUpgradeWheel(msg) {
+    const { result, chance, target, goldActive } = msg;
     state.goldActive = goldActive;
     renderWheel(chance, goldActive);
     const g = wheelGeometry(chance, goldActive);
@@ -1249,7 +1251,7 @@
     elWheelSvg.style.transition = 'none';
     elWheelSvg.style.transform = 'rotate(0deg)';
     void elWheelSvg.offsetWidth;
-    elWheelSvg.style.transition = 'transform 8000ms cubic-bezier(0.15, 0.9, 0.25, 1)';
+    elWheelSvg.style.transition = 'transform 4000ms cubic-bezier(0.15, 0.9, 0.25, 1)';
     elWheelSvg.style.transform = `rotate(${finalRotation}deg)`;
 
     setTimeout(() => {
@@ -1257,6 +1259,9 @@
       state.goldActive = false;
       state.upgSource = null;
       state.upgTarget = null;
+      
+      // Апдейтим стейт на основе того, что сервер уже списал/начислил
+      // В history сервер уже добавил запись, просто перерисуем
       renderUpgrader();
 
       if (result === 'gold') {
@@ -1264,26 +1269,26 @@
         $('winIcon').textContent = '🌟';
         $('winRar').textContent = 'ЗОЛОТО! x2';
         $('winRar').style.color = '#fbbf24';
-        $('winName').textContent = wonItem.icon + ' ' + wonItem.name;
+        $('winName').textContent = msg.wonItem.icon + ' ' + msg.wonItem.name;
         $('winPrice').textContent = 'Шанс ' + fmtChance(chance) + ' • цель ' + target.name;
       } else if (result === 'win') {
-        const rar = RARITIES[wonItem.rarity];
+        const rar = RARITIES[msg.wonItem.rarity];
         $('winCard').style.setProperty('--rar', rar.color);
         $('winIcon').textContent = '✅';
         $('winRar').textContent = 'АПГРЕЙД УДАЛСЯ';
         $('winRar').style.color = rar.color;
-        $('winName').textContent = wonItem.icon + ' ' + wonItem.name;
+        $('winName').textContent = msg.wonItem.icon + ' ' + msg.wonItem.name;
         $('winPrice').textContent = 'Шанс был ' + fmtChance(chance);
       } else {
         $('winCard').style.setProperty('--rar', '#ff2d6f');
         $('winIcon').textContent = '💀';
         $('winRar').textContent = 'ПРОВАЛ';
         $('winRar').style.color = '#ff2d6f';
-        $('winName').textContent = 'Потерян: ' + msg.source?.icon + ' ' + msg.source?.name;
+        $('winName').textContent = 'Потерян предмет';
         $('winPrice').textContent = 'Шанс был ' + fmtChance(chance);
       }
       $('overlay').classList.add('show');
-    }, 8100);
+    }, 4100);
   }
 
   // ===== БАТЛЫ =====
@@ -1386,8 +1391,6 @@
     arenaState = {
       battle,
       myId: state.playerId,
-      myDrops: null,
-      oppDrops: null,
       iRolled: false
     };
     state.currentBattle = battle;
@@ -1409,7 +1412,6 @@
     $('arenaRightRoll').textContent = 'Ждём...';
     $('arenaLeftRoll').textContent = 'Крутить';
 
-    // переназначим обработчик (клонируем кнопку)
     const rollBtn = $('arenaLeftRoll');
     rollBtn.onclick = () => {
       if (arenaState.iRolled) return;
