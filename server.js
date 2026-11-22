@@ -95,8 +95,8 @@ const CASES = [
 CASES.forEach(c => { c.weights = computeWeights(c.price); });
 
 const state = {
-  players: {},   // playerId -> { nick, balance, inventory, history }
-  battles: {}    // battleId -> { id, creatorId, creatorNick, caseIds, price, status, joinerId, joinerNick, drops: { [pid]: [] }, createdAt }
+  players: {},
+  battles: {}
 };
 
 function loadData() {
@@ -105,9 +105,7 @@ function loadData() {
     const raw = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
     if (raw.players) state.players = raw.players;
     if (raw.battles) state.battles = raw.battles;
-  } catch (e) {
-    console.error('load error', e);
-  }
+  } catch (e) {}
 }
 
 function saveData() {
@@ -118,7 +116,6 @@ function saveData() {
 
 setInterval(saveData, SAVE_INTERVAL);
 
-// ===== ИГРОВАЯ ЛОГИКА =====
 function rollRarity(weights) {
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
   let r = Math.random() * total;
@@ -130,7 +127,6 @@ function rollRarity(weights) {
 }
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
 function makeItem(rarity) {
   const base = pick(ITEMS[rarity]);
   return { ...base, rarity, uid: Date.now() + Math.random() };
@@ -166,26 +162,12 @@ function getGoldItem(target) {
   return best;
 }
 
-function getPlayer(pid) {
-  return state.players[pid] || null;
-}
+function getPlayer(pid) { return state.players[pid] || null; }
+function publicPlayer(p) { return { nick: p.nick, balance: p.balance, inventory: p.inventory, history: p.history }; }
 
-function publicPlayer(p) {
-  return { nick: p.nick, balance: p.balance, inventory: p.inventory, history: p.history };
-}
-
-// ===== HTTP =====
-const MIME = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.ico': 'image/x-icon'
-};
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png' };
 
 const server = http.createServer((req, res) => {
-  // Экспорт/импорт сейва
   if (req.method === 'POST' && req.url === '/api/import') {
     let body = '';
     req.on('data', c => body += c);
@@ -195,12 +177,8 @@ const server = http.createServer((req, res) => {
         if (data.players) state.players = data.players;
         if (data.battles) state.battles = data.battles;
         saveData();
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'bad json' }));
-      }
+        res.writeHead(200); res.end(JSON.stringify({ ok: true }));
+      } catch (e) { res.writeHead(400); res.end(JSON.stringify({ error: 'bad json' })); }
     });
     return;
   }
@@ -212,11 +190,9 @@ const server = http.createServer((req, res) => {
 
   let filePath = req.url.split('?')[0];
   if (filePath === '/' || filePath === '') filePath = '/index.html';
-  const fullPath = path.join(__dirname, 'public', filePath);
-  const safe = path.normalize(fullPath);
-  if (!safe.startsWith(path.join(__dirname, 'public'))) {
-    res.writeHead(403); res.end('forbidden'); return;
-  }
+  const safe = path.normalize(path.join(__dirname, 'public', filePath));
+  if (!safe.startsWith(path.join(__dirname, 'public'))) { res.writeHead(403); res.end('forbidden'); return; }
+  
   fs.readFile(safe, (err, data) => {
     if (err) { res.writeHead(404); res.end('not found'); return; }
     const ext = path.extname(safe).toLowerCase();
@@ -225,39 +201,25 @@ const server = http.createServer((req, res) => {
   });
 });
 
-// ===== WS =====
 const wss = new WebSocketServer({ server });
-const clients = new Map(); // ws -> { playerId, nick }
+const clients = new Map();
 
 function broadcastAll(obj) {
   const msg = JSON.stringify(obj);
-  for (const ws of wss.clients) {
-    if (ws.readyState === 1) ws.send(msg);
-  }
+  for (const ws of wss.clients) if (ws.readyState === 1) ws.send(msg);
 }
-
-function send(ws, obj) {
-  if (ws.readyState === 1) ws.send(JSON.stringify(obj));
-}
+function send(ws, obj) { if (ws.readyState === 1) ws.send(JSON.stringify(obj)); }
 
 function broadcastBattles() {
   const list = Object.values(state.battles)
     .filter(b => b.status === 'waiting')
-    .map(b => ({
-      id: b.id,
-      creatorNick: b.creatorNick,
-      caseIds: b.caseIds,
-      cases: b.caseIds.map(id => CASES.find(c => c.id === id)).filter(Boolean),
-      price: b.price,
-      createdAt: b.createdAt
-    }));
+    .map(b => ({ id: b.id, creatorNick: b.creatorNick, caseIds: b.caseIds, cases: b.caseIds.map(id => CASES.find(c => c.id === id)).filter(Boolean), price: b.price, createdAt: b.createdAt }));
   broadcastAll({ type: 'battles', battles: list });
 }
 
 function sendStateTo(ws, pid) {
   const p = getPlayer(pid);
-  if (!p) return;
-  send(ws, { type: 'state', player: publicPlayer(p) });
+  if (p) send(ws, { type: 'state', player: publicPlayer(p) });
 }
 
 wss.on('connection', (ws) => {
@@ -268,21 +230,17 @@ wss.on('connection', (ws) => {
     let msg;
     try { msg = JSON.parse(raw.toString()); } catch { return; }
 
-    // ===== Регистрация / вход =====
     if (msg.type === 'hello') {
       const pid = String(msg.playerId || '').trim();
       const nick = String(msg.nick || '').trim().slice(0, 24);
-      if (!pid || !nick) {
-        send(ws, { type: 'error', msg: 'need playerId and nick' });
-        return;
-      }
+      if (!pid || !nick) return send(ws, { type: 'error', msg: 'need playerId and nick' });
+      
       let p = getPlayer(pid);
       if (!p) {
         p = { nick, balance: START_BALANCE, inventory: [], history: [] };
         state.players[pid] = p;
-      } else {
-        p.nick = nick;
-      }
+      } else p.nick = nick;
+      
       clients.set(ws, { playerId: pid, nick });
       send(ws, { type: 'hello_ok', playerId: pid, player: publicPlayer(p), cases: CASES.map(c => ({ id: c.id, name: c.name, icon: c.icon, price: c.price, desc: c.desc })) });
       sendStateTo(ws, pid);
@@ -295,19 +253,13 @@ wss.on('connection', (ws) => {
     const p = getPlayer(c.playerId);
     if (!p) return;
 
-    // ===== Заработок =====
-    if (msg.type === 'earn_money') {
-      p.balance += 0.1;
-      sendStateTo(ws, c.playerId);
-      saveData();
-      return;
-    }
+    if (msg.type === 'get_state') { sendStateTo(ws, c.playerId); return; }
+    if (msg.type === 'earn_money') { p.balance += 0.1; sendStateTo(ws, c.playerId); saveData(); return; }
 
-    // ===== Открыть кейс =====
     if (msg.type === 'open_case') {
       const caseObj = CASES.find(x => x.id === msg.caseId);
       if (!caseObj) return;
-      if (p.balance < caseObj.price) { send(ws, { type: 'error', msg: 'no money' }); return; }
+      if (p.balance < caseObj.price) return send(ws, { type: 'error', msg: 'no money' });
       p.balance -= caseObj.price;
       const rarity = rollRarity(caseObj.weights);
       const item = makeItem(rarity);
@@ -318,14 +270,14 @@ wss.on('connection', (ws) => {
       return;
     }
 
-    // ===== Продать предмет =====
     if (msg.type === 'sell_item') {
       const idx = p.inventory.findIndex(i => i.uid === msg.uid);
-      if (idx === -1) return;
-      p.balance += p.inventory[idx].price;
-      p.inventory.splice(idx, 1);
-      sendStateTo(ws, c.playerId);
-      saveData();
+      if (idx !== -1) {
+        p.balance += p.inventory[idx].price;
+        p.inventory.splice(idx, 1);
+        sendStateTo(ws, c.playerId);
+        saveData();
+      }
       return;
     }
     if (msg.type === 'sell_all') {
@@ -336,7 +288,6 @@ wss.on('connection', (ws) => {
       return;
     }
 
-    // ===== Апгрейдер =====
     if (msg.type === 'upgrade') {
       const srcIdx = p.inventory.findIndex(i => i.uid === msg.sourceUid);
       if (srcIdx === -1) return;
@@ -369,44 +320,23 @@ wss.on('connection', (ws) => {
         wonItem = result === 'gold' ? getGoldItem(target) : target;
         p.inventory.push({ ...wonItem, uid: Date.now() + Math.random() });
       }
-      p.history.unshift({
-        result,
-        fromIcon: source.icon, fromName: source.name,
-        toIcon: wonItem ? wonItem.icon : target.icon,
-        toName: wonItem ? wonItem.name : target.name,
-        chance: (chance * 100).toFixed(2) + '%',
-        gain: wonItem ? wonItem.price - source.price : 0,
-        loss: result === 'lose' ? source.price : 0
-      });
+      p.history.unshift({ result, fromIcon: source.icon, fromName: source.name, toIcon: wonItem ? wonItem.icon : target.icon, toName: wonItem ? wonItem.name : target.name, chance: (chance * 100).toFixed(2) + '%', gain: wonItem ? wonItem.price - source.price : 0, loss: result === 'lose' ? source.price : 0 });
       if (p.history.length > MAX_HISTORY) p.history.length = MAX_HISTORY;
-      sendStateTo(ws, c.playerId);
       
-      // Передаем source, чтобы клиент знал, что сгорело
+      sendStateTo(ws, c.playerId);
       send(ws, { type: 'upgrade_result', result, wonItem, chance, goldActive, target, source });
       saveData();
       return;
     }
 
-    // ===== Батлы =====
     if (msg.type === 'battle_create') {
       const caseIds = (msg.caseIds || []).filter(id => CASES.some(c => c.id === id)).slice(0, 20);
-      if (caseIds.length === 0) { send(ws, { type: 'error', msg: 'no cases' }); return; }
+      if (caseIds.length === 0) return send(ws, { type: 'error', msg: 'no cases' });
       const price = caseIds.reduce((s, id) => s + CASES.find(c => c.id === id).price, 0);
-      if (p.balance < price) { send(ws, { type: 'error', msg: 'no money' }); return; }
+      if (p.balance < price) return send(ws, { type: 'error', msg: 'no money' });
       p.balance -= price;
       const id = crypto.randomUUID();
-      state.battles[id] = {
-        id,
-        creatorId: c.playerId,
-        creatorNick: p.nick,
-        caseIds,
-        price,
-        status: 'waiting',
-        joinerId: null,
-        joinerNick: null,
-        drops: {},
-        createdAt: Date.now()
-      };
+      state.battles[id] = { id, creatorId: c.playerId, creatorNick: p.nick, caseIds, price, status: 'waiting', joinerId: null, joinerNick: null, drops: {}, createdAt: Date.now() };
       sendStateTo(ws, c.playerId);
       broadcastBattles();
       saveData();
@@ -415,8 +345,7 @@ wss.on('connection', (ws) => {
 
     if (msg.type === 'battle_cancel') {
       const b = state.battles[msg.battleId];
-      if (!b || b.status !== 'waiting') return;
-      if (b.creatorId !== c.playerId) return;
+      if (!b || b.status !== 'waiting' || b.creatorId !== c.playerId) return;
       p.balance += b.price;
       delete state.battles[b.id];
       sendStateTo(ws, c.playerId);
@@ -427,30 +356,21 @@ wss.on('connection', (ws) => {
 
     if (msg.type === 'battle_join') {
       const b = state.battles[msg.battleId];
-      if (!b || b.status !== 'waiting') { send(ws, { type: 'error', msg: 'battle not available' }); return; }
-      if (b.creatorId === c.playerId) { send(ws, { type: 'error', msg: 'cannot join own battle' }); return; }
-      if (p.balance < b.price) { send(ws, { type: 'error', msg: 'no money' }); return; }
+      if (!b || b.status !== 'waiting') return send(ws, { type: 'error', msg: 'battle not available' });
+      if (b.creatorId === c.playerId) return send(ws, { type: 'error', msg: 'cannot join own battle' });
+      if (p.balance < b.price) return send(ws, { type: 'error', msg: 'no money' });
+      
       p.balance -= b.price;
       b.joinerId = c.playerId;
       b.joinerNick = p.nick;
       b.status = 'playing';
-      b.drops = { [b.creatorId]: [], [b.joinerId]: [] };
+      b.drops = { [b.creatorId]: null, [b.joinerId]: null };
 
       const participants = [b.creatorId, b.joinerId];
       participants.forEach(pid => {
         for (const [w, info] of clients) {
           if (info.playerId === pid) {
-            send(w, {
-              type: 'battle_start',
-              battle: {
-                id: b.id,
-                caseIds: b.caseIds,
-                cases: b.caseIds.map(id => CASES.find(c => c.id === id)),
-                creatorId: b.creatorId, creatorNick: b.creatorNick,
-                joinerId: b.joinerId, joinerNick: b.joinerNick,
-                price: b.price
-              }
-            });
+            send(w, { type: 'battle_start', battle: { id: b.id, caseIds: b.caseIds, cases: b.caseIds.map(id => CASES.find(c => c.id === id)), creatorId: b.creatorId, creatorNick: b.creatorNick, joinerId: b.joinerId, joinerNick: b.joinerNick, price: b.price } });
             sendStateTo(w, pid);
           }
         }
@@ -464,13 +384,13 @@ wss.on('connection', (ws) => {
       const b = state.battles[msg.battleId];
       if (!b || b.status !== 'playing') return;
       if (b.creatorId !== c.playerId && b.joinerId !== c.playerId) return;
+      if (b.drops[c.playerId]) return; // Уже крутил
 
       const drops = [];
       for (const caseId of b.caseIds) {
         const caseObj = CASES.find(x => x.id === caseId);
         const rarity = rollRarity(caseObj.weights);
-        const item = makeItem(rarity);
-        drops.push(item);
+        drops.push(makeItem(rarity));
       }
       b.drops[c.playerId] = drops;
 
@@ -478,12 +398,7 @@ wss.on('connection', (ws) => {
       participants.forEach(pid => {
         for (const [w, info] of clients) {
           if (info.playerId === pid) {
-            send(w, {
-              type: 'battle_progress',
-              battleId: b.id,
-              playerId: c.playerId,
-              drops
-            });
+            send(w, { type: 'battle_progress', battleId: b.id, playerId: c.playerId, drops });
           }
         }
       });
@@ -496,66 +411,43 @@ wss.on('connection', (ws) => {
     }
   });
 
-  ws.on('close', () => {
-    clients.delete(ws);
-  });
+  ws.on('close', () => { clients.delete(ws); });
 });
 
-function sumDrops(arr) {
-  return (arr || []).reduce((s, i) => s + i.price, 0);
-}
-
 function finishBattle(b) {
-  const cSum = sumDrops(b.drops[b.creatorId]);
-  const jSum = sumDrops(b.drops[b.joinerId]);
+  const cSum = b.drops[b.creatorId].reduce((s, i) => s + i.price, 0);
+  const jSum = b.drops[b.joinerId].reduce((s, i) => s + i.price, 0);
   const winnerId = cSum >= jSum ? b.creatorId : b.joinerId;
-  const loserId = winnerId === b.creatorId ? b.joinerId : b.creatorId;
 
-  const allItems = [...(b.drops[b.creatorId] || []), ...(b.drops[b.joinerId] || [])];
+  const allItems = [...b.drops[b.creatorId], ...b.drops[b.joinerId]];
   const winner = getPlayer(winnerId);
-  if (winner) {
-    allItems.forEach(it => winner.inventory.push({ ...it, uid: Date.now() + Math.random() }));
-  }
+  if (winner) allItems.forEach(it => winner.inventory.push({ ...it, uid: Date.now() + Math.random() }));
 
   b.status = 'finished';
-  b.winnerId = winnerId;
-  b.cSum = cSum;
-  b.jSum = jSum;
-
+  
   const participants = [b.creatorId, b.joinerId];
   participants.forEach(pid => {
     for (const [w, info] of clients) {
       if (info.playerId === pid) {
         send(w, {
-          type: 'battle_finish',
-          battleId: b.id,
-          winnerId,
-          winnerNick: winnerId === b.creatorId ? b.creatorNick : b.joinerNick,
-          cSum, jSum,
-          creatorId: b.creatorId, creatorNick: b.creatorNick,
-          joinerId: b.joinerId, joinerNick: b.joinerNick,
-          drops: b.drops,
-          itemsWon: allItems
+          type: 'battle_finish', battleId: b.id, winnerId,
+          cSum, jSum, creatorId: b.creatorId, joinerId: b.joinerId, drops: b.drops
         });
         sendStateTo(w, pid);
       }
     }
   });
-
   broadcastBattles();
   saveData();
 }
 
-// ping
 setInterval(() => {
   wss.clients.forEach(ws => {
-    if (!ws.isAlive) { ws.terminate(); return; }
+    if (!ws.isAlive) return ws.terminate();
     ws.isAlive = false;
     ws.ping();
   });
 }, 30000);
 
 loadData();
-server.listen(PORT, () => {
-  console.log('Zaharka Drop server on', PORT);
-});
+server.listen(PORT, () => console.log('Zaharka Drop server on', PORT));
