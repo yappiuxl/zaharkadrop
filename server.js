@@ -62,7 +62,8 @@ const ITEMS = [
   { icon: '🍑', name: 'Персик',                price: 50000 },
   { icon: '🧢', name: 'Кепка',                 price: 67000 },
   { icon: '💝', name: 'Херт локет',            price: 250000 },
-  { icon: '🐸', name: 'Пепе',                  price: 1000000 }
+  { icon: '🐸', name: 'Пепе',                  price: 1000000 },
+  { icon: '👁️', name: 'Захарка',              price: 0, isPriceless: true }
 ];
 
 const LEVELS = [
@@ -80,72 +81,15 @@ const LEVELS = [
   { lvl: 12, xp: 200000, mult: 0, reward: { item: 'Персик' } }
 ];
 
-// КЕЙСЫ
 const CASES = [
-  { 
-    id: 'free', 
-    name: 'Бесплатный', 
-    icon: '🎁', 
-    price: 0, 
-    desc: '99.9% на Ничего',
-    isFree: true
-  },
-  { 
-    id: 'hody', 
-    name: 'Ходы', 
-    icon: '♟️', 
-    price: 4242, 
-    desc: 'Шанс на БРИЛЛИАНТ',
-    items: ITEMS.filter(i => ['Зевок', 'Упущенная возможность', 'Ошибка', 'Неточность', 'Хороший', 'Отличный', 'Лучший', 'Замечательный', 'БРИЛЛИАНТ'].includes(i.name))
-  },
-  { 
-    id: 'figury', 
-    name: 'Фигуры', 
-    icon: '♞', 
-    price: 20, 
-    desc: 'Шахматные фигуры',
-    items: ITEMS.filter(i => ['Пешка', 'Слон', 'Конь', 'Король', 'Ладья', 'Ферзь'].includes(i.name))
-  },
-  { 
-    id: 'podarki', 
-    name: 'Подарки', 
-    icon: '🎁', 
-    price: 100, 
-    desc: 'Подарки и любовь',
-    items: ITEMS.filter(i => ['Сердце', 'Мишка', 'Подарок', 'Роза', 'Торт', 'Букет', 'Ракета', 'Шампанское', 'Кубок', 'Алмаз', 'Кольцо'].includes(i.name))
-  },
-  { 
-    id: 'nft', 
-    name: 'Нфт', 
-    icon: '🐸', 
-    price: 100000, 
-    desc: 'Все Нфт',
-    items: ITEMS.filter(i => ['Факел', 'Календарь', 'Снуп дог', 'Лол поп', 'Брауни', 'Маска', 'Папаха', 'Троянский конь', 'Очки', 'Скэйред кэт', 'Персик', 'Кепка', 'Херт локет', 'Пепе'].includes(i.name))
-  },
-  { 
-    id: 'telegram', 
-    name: 'Телеграм', 
-    icon: '✈️', 
-    price: 50000, 
-    desc: 'Подарки и Нфт',
-    items: ITEMS.filter(i => ['Сердце', 'Мишка', 'Подарок', 'Роза', 'Торт', 'Букет', 'Ракета', 'Шампанское', 'Кубок', 'Алмаз', 'Кольцо', 'Факел', 'Календарь', 'Снуп дог', 'Лол поп', 'Брауни', 'Маска', 'Папаха', 'Троянский конь', 'Очки', 'Скэйред кэт', 'Персик', 'Кепка', 'Херт локет', 'Пепе'].includes(i.name))
-  },
-  { 
-    id: 'shahmaty', 
-    name: 'Шахматы', 
-    icon: '♟️', 
-    price: 2500, 
-    desc: 'Ходы и Фигуры',
-    items: ITEMS.filter(i => ['Зевок', 'Упущенная возможность', 'Ошибка', 'Неточность', 'Хороший', 'Отличный', 'Лучший', 'Замечательный', 'БРИЛЛИАНТ', 'Пешка', 'Слон', 'Конь', 'Король', 'Ладья', 'Ферзь'].includes(i.name))
-  },
-  { 
-    id: 'all', 
-    name: 'ВСЁ', 
-    icon: '🌌', 
-    price: 33367, 
-    desc: 'Все предметы',
-    items: ITEMS
-  }
+  { id: 'free', name: 'Бесплатный', icon: '🎁', price: 0, desc: '99.9% на Ничего', isFree: true, zaharkaChance: 1/1000000 },
+  { id: 'hody', name: 'Ходы', icon: '♟️', price: 4242, desc: 'Шанс на БРИЛЛИАНТ', items: ITEMS.filter(i => ['Зевок', 'Упущенная возможность', 'Ошибка', 'Неточность', 'Хороший', 'Отличный', 'Лучший', 'Замечательный', 'БРИЛЛИАНТ'].includes(i.name)), zaharkaChance: 1/200 },
+  { id: 'figury', name: 'Фигуры', icon: '♞', price: 20, desc: 'Шахматные фигуры', items: ITEMS.filter(i => ['Пешка', 'Слон', 'Конь', 'Король', 'Ладья', 'Ферзь'].includes(i.name)), zaharkaChance: 1/5000 },
+  { id: 'podarki', name: 'Подарки', icon: '🎁', price: 100, desc: 'Подарки и любовь', items: ITEMS.filter(i => ['Сердце', 'Мишка', 'Подарок', 'Роза', 'Торт', 'Букет', 'Ракета', 'Шампанское', 'Кубок', 'Алмаз', 'Кольцо'].includes(i.name)), zaharkaChance: 1/1000 },
+  { id: 'nft', name: 'Нфт', icon: '🐸', price: 100000, desc: 'Все Нфт', items: ITEMS.filter(i => ['Факел', 'Календарь', 'Снуп дог', 'Лол поп', 'Брауни', 'Маска', 'Папаха', 'Троянский конь', 'Очки', 'Скэйред кэт', 'Персик', 'Кепка', 'Херт локет', 'Пепе'].includes(i.name)), zaharkaChance: 1/10 },
+  { id: 'telegram', name: 'Телеграм', icon: '✈️', price: 50000, desc: 'Подарки и Нфт', items: ITEMS.filter(i => ['Сердце', 'Мишка', 'Подарок', 'Роза', 'Торт', 'Букет', 'Ракета', 'Шампанское', 'Кубок', 'Алмаз', 'Кольцо', 'Факел', 'Календарь', 'Снуп дог', 'Лол поп', 'Брауни', 'Маска', 'Папаха', 'Троянский конь', 'Очки', 'Скэйред кэт', 'Персик', 'Кепка', 'Херт локет', 'Пепе'].includes(i.name)), zaharkaChance: 1/20 },
+  { id: 'shahmaty', name: 'Шахматы', icon: '♟️', price: 2500, desc: 'Ходы и Фигуры', items: ITEMS.filter(i => ['Зевок', 'Упущенная возможность', 'Ошибка', 'Неточность', 'Хороший', 'Отличный', 'Лучший', 'Замечательный', 'БРИЛЛИАНТ', 'Пешка', 'Слон', 'Конь', 'Король', 'Ладья', 'Ферзь'].includes(i.name)), zaharkaChance: 1/400 },
+  { id: 'all', name: 'ВСЁ', icon: '🌌', price: 33367, desc: 'Все предметы', items: ITEMS.filter(i => !i.isPriceless), zaharkaChance: 1/25 }
 ];
 
 const state = { players: {}, battles: {} };
@@ -168,9 +112,16 @@ function saveData() {
 setInterval(saveData, SAVE_INTERVAL);
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 function rollCase(caseObj) {
+  // Проверка на Захарку
+  if (caseObj.zaharkaChance && Math.random() < caseObj.zaharkaChance) {
+    const z = ITEMS.find(i => i.name === 'Захарка');
+    return { ...z, uid: Date.now() + Math.random() };
+  }
+  
   if (caseObj.isFree) {
-    if (Math.random() < 0.001) return { ...pick(ITEMS), uid: Date.now() + Math.random() };
+    if (Math.random() < 0.001) return { ...pick(ITEMS.filter(i => !i.isPriceless)), uid: Date.now() + Math.random() };
     return { icon: '🕳️', name: 'Ничего', price: 0, uid: Date.now() + Math.random() };
   }
   return { ...pick(caseObj.items), uid: Date.now() + Math.random() };
@@ -178,6 +129,7 @@ function rollCase(caseObj) {
 
 function calcChance(source, target) {
   if (!source || !target) return null;
+  if (target.isPriceless) return 0.0001;
   const mult = target.price / source.price;
   let chance = (1 / mult);
   if (chance < CHANCE_MIN) return 0;
@@ -188,11 +140,11 @@ function getGoldItem(target) {
   const wanted = target.price * GOLD_MULT;
   let best = null; let bestDiff = Infinity;
   ITEMS.forEach(it => {
-    if (it.price < wanted) return;
+    if (it.isPriceless || it.price < wanted) return;
     const diff = it.price - wanted;
     if (diff < bestDiff) { bestDiff = diff; best = it; }
   });
-  return best || ITEMS[ITEMS.length - 1];
+  return best || ITEMS[ITEMS.length - 2];
 }
 
 function addXP(p, amount) {
@@ -207,7 +159,6 @@ function addXP(p, amount) {
   }
   
   if (newLvl > p.lvl) {
-    // Выдача наград за все пропущенные уровни
     for (let i = p.lvl + 1; i <= newLvl; i++) {
       const reward = LEVELS.find(l => l.lvl === i)?.reward;
       if (reward) {
@@ -219,9 +170,7 @@ function addXP(p, amount) {
         if (reward.case) {
           const c = CASES.find(c => c.id === reward.case);
           if (c) {
-            for (let k = 0; k < (reward.count || 1); k++) {
-              p.inventory.push(rollCase(c));
-            }
+            for (let k = 0; k < (reward.count || 1); k++) p.inventory.push(rollCase(c));
           }
         }
       }
@@ -397,7 +346,7 @@ wss.on('connection', (ws) => {
         items.push(item);
       }
       
-      addXP(p, Math.floor(totalCost / 10)); // 1 XP за 10₽
+      addXP(p, Math.floor(totalCost / 10));
       
       sendStateTo(ws, c.playerId);
       send(ws, { type: 'case_opened', items });
@@ -455,7 +404,7 @@ wss.on('connection', (ws) => {
       p.history.unshift({ result, fromIcon: source.icon, fromName: source.name, toIcon: wonItem ? wonItem.icon : target.icon, toName: wonItem ? wonItem.name : target.name, chance: (chance * 100).toFixed(2) + '%', gain: wonItem ? wonItem.price - source.price : 0, loss: result === 'lose' ? source.price : 0 });
       if (p.history.length > MAX_HISTORY) p.history.length = MAX_HISTORY;
       
-      addXP(p, Math.floor(source.price / 10)); // 1 XP за 10₽ ставки
+      addXP(p, Math.floor(source.price / 10));
       
       sendStateTo(ws, c.playerId);
       send(ws, { type: 'upgrade_result', result, wonItem, chance, goldActive, target, source });
@@ -469,7 +418,7 @@ wss.on('connection', (ws) => {
       const price = caseIds.reduce((s, id) => s + CASES.find(c => c.id === id).price, 0);
       if (p.balance < price) return send(ws, { type: 'error', msg: 'no money' });
       p.balance -= price;
-      addXP(p, Math.floor(price / 10)); // 1 XP за 10₽
+      addXP(p, Math.floor(price / 10));
       const id = crypto.randomUUID();
       state.battles[id] = { id, creatorId: c.playerId, creatorNick: p.nick, caseIds, price, status: 'waiting', joinerId: null, joinerNick: null, drops: {}, createdAt: Date.now() };
       sendStateTo(ws, c.playerId);
@@ -496,7 +445,7 @@ wss.on('connection', (ws) => {
       if (p.balance < b.price) return send(ws, { type: 'error', msg: 'no money' });
       
       p.balance -= b.price;
-      addXP(p, Math.floor(b.price / 10)); // 1 XP за 10₽
+      addXP(p, Math.floor(b.price / 10));
       
       b.joinerId = c.playerId;
       b.joinerNick = p.nick;
