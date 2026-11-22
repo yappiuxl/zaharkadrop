@@ -372,7 +372,7 @@ wss.on('connection', (ws) => {
       });
       if (p.history.length > MAX_HISTORY) p.history.length = MAX_HISTORY;
       sendStateTo(ws, c.playerId);
-      send(ws, { type: 'upgrade_result', result, wonItem, chance, goldActive, target });
+      send(ws, { type: 'upgrade_result', result, wonItem, chance, goldActive, target, source });
       saveData();
       return;
     }
