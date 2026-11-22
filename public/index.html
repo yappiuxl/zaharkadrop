@@ -680,8 +680,8 @@
     myDropDone: false,
     oppDropDone: false,
     lastBattleId: null,
-    pendingCaseDrop: null, // <- сохраняем результат кейса для анимации
-    pendingUpgDrop: null   // <- сохраняем результат апгрейда
+    pendingCaseDrop: null,
+    pendingUpgDrop: null
   };
 
   let ws = null;
@@ -740,14 +740,14 @@
         break;
 
       case 'case_opened':
-        // НЕ показываем сразу, сохраняем в pending и крутим рулетку
         state.pendingCaseDrop = msg.item;
         animateRollLocal(state.pendingCaseDrop);
         break;
 
       case 'upgrade_result':
-        // То же самое для апгрейда
+        // ВАЖНО: передаем и msg.source, чтобы знать, что потеряли
         state.pendingUpgDrop = msg;
+        spinUpgradeWheel(msg);
         break;
 
       case 'battles':
@@ -922,7 +922,6 @@
       elTrack.style.transition = `transform ${duration}ms cubic-bezier(0.12, 0.8, 0.2, 1)`;
       elTrack.style.transform = `translateX(${finalX}px)`;
 
-      // Когда анимация завершилась - показываем результат
       setTimeout(() => {
         state.rolling = false;
         updateCaseStates();
@@ -1225,9 +1224,8 @@
     send({ type: 'upgrade', sourceUid: source.uid, target: { rarity: target.rarity, icon: target.icon, name: target.name, price: target.price } });
   });
 
-  // Функция, которая запускается после получения ответа от сервера
   function spinUpgradeWheel(msg) {
-    const { result, chance, target, goldActive } = msg;
+    const { result, chance, target, goldActive, source } = msg;
     state.goldActive = goldActive;
     renderWheel(chance, goldActive);
     const g = wheelGeometry(chance, goldActive);
@@ -1259,9 +1257,6 @@
       state.goldActive = false;
       state.upgSource = null;
       state.upgTarget = null;
-      
-      // Апдейтим стейт на основе того, что сервер уже списал/начислил
-      // В history сервер уже добавил запись, просто перерисуем
       renderUpgrader();
 
       if (result === 'gold') {
@@ -1284,7 +1279,7 @@
         $('winIcon').textContent = '💀';
         $('winRar').textContent = 'ПРОВАЛ';
         $('winRar').style.color = '#ff2d6f';
-        $('winName').textContent = 'Потерян предмет';
+        $('winName').textContent = 'Потерян: ' + (source ? source.icon + ' ' + source.name : 'предмет');
         $('winPrice').textContent = 'Шанс был ' + fmtChance(chance);
       }
       $('overlay').classList.add('show');
