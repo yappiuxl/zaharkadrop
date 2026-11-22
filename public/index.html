@@ -20,9 +20,11 @@
   .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .balance { font-size: 16px; font-weight: 700; color: var(--accent); text-shadow: 0 0 12px rgba(0,255,200,0.4); white-space: nowrap; }
   .balance span { color: var(--dim); font-size: 11px; font-weight: 400; margin-right: 4px; }
-  .tabs { display: flex; gap: 4px; background: var(--bg2); padding: 4px; border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; }
-  .tab { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; background: transparent; border: none; color: var(--dim); border-radius: 8px; cursor: pointer; touch-action: manipulation; transition: background 0.15s, color 0.15s; }
+  
+  .tabs { display: flex; gap: 4px; background: var(--bg2); padding: 4px; border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+  .tab { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; background: transparent; border: none; color: var(--dim); border-radius: 8px; cursor: pointer; touch-action: manipulation; transition: background 0.15s, color 0.15s; white-space: nowrap; }
   .tab.active { background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px var(--border); }
+  
   main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
   .view { display: none; flex: 1; min-height: 0; overflow-y: auto; flex-direction: column; gap: 8px; }
   .view.active { display: flex; }
@@ -118,7 +120,19 @@
   .bi-join { background: var(--accent); color: #000; }
   .bi-cancel { background: transparent; border: 1px solid var(--c-true); color: var(--c-true); }
 
-  /* АРЕНА */
+  /* НОВАЯ ВКЛАДКА: ЗАДАНИЯ */
+  .tasks-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; padding-bottom: 20px; }
+  .task-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .task-card.wide { grid-column: 1 / -1; }
+  .task-title { font-size: 11px; color: var(--dim); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .task-icon { font-size: 32px; font-weight: 700; line-height: 1; }
+  .task-name { font-size: 14px; font-weight: 700; }
+  .task-timer { font-size: 12px; color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .task-btn { width: 100%; padding: 10px; border-radius: 8px; border: none; background: var(--bg2); color: var(--text); font-weight: 700; font-size: 13px; cursor: pointer; touch-action: manipulation; }
+  .task-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .task-btn.ready { background: linear-gradient(90deg, var(--accent), #00b894); color: #000; }
+
+  /* АРЕНА БАТЛА */
   .battle-arena { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; z-index: 200; padding: 12px; gap: 10px; backdrop-filter: blur(8px); }
   .battle-arena.show { display: flex; }
   .arena-countdown { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 300; font-size: 120px; font-weight: 900; color: var(--accent); text-shadow: 0 0 40px var(--accent); }
@@ -178,6 +192,7 @@
     .wheel-wrap { width: 110px; height: 110px; } .upg-slot { max-width: 110px; }
     .arena-countdown { font-size: 80px; }
     .multi-grid { gap: 4px; } .multi-item .mi-icon { font-size: 20px; } .multi-item .mi-name { font-size: 9px; height: 20px; }
+    .tasks-wrap { gap: 6px; } .task-card { padding: 10px 6px; } .task-name { font-size: 12px; } .task-icon { font-size: 24px; }
   }
 </style>
 </head>
@@ -194,6 +209,7 @@
     <button class="tab" data-tab="cases">Кейсы</button>
     <button class="tab" data-tab="upg">Апгрейдер</button>
     <button class="tab" data-tab="battles">Батлы</button>
+    <button class="tab" data-tab="tasks">Задания</button>
   </div>
   <main>
     <div class="view active" id="viewInv">
@@ -215,7 +231,6 @@
           </div>
           <div class="upg-slot" id="upgTargetSlot"></div>
         </div>
-        
         <div class="upg-presets" id="upgPresets">
           <button class="preset-btn" data-mult="2">×2</button>
           <button class="preset-btn" data-mult="4">×4</button>
@@ -224,7 +239,6 @@
           <button class="preset-btn" data-chance="50">50%</button>
           <button class="preset-btn" data-chance="75">75%</button>
         </div>
-
         <div class="upg-actions">
           <button class="upg-btn go" id="upgGo" disabled>Апгрейд</button>
           <button class="upg-btn fast" id="upgFast" disabled>⚡️</button>
@@ -232,6 +246,7 @@
         </div>
       </div>
     </div>
+    
     <div class="view" id="viewBattles">
       <div class="battles-wrap">
         <button class="battle-create-btn" id="battleCreateBtn">Создать батл</button>
@@ -239,22 +254,49 @@
         <div id="battlesList"></div>
       </div>
     </div>
+
+    <div class="view" id="viewTasks">
+      <div class="tasks-wrap">
+        <div class="task-card">
+          <div class="task-title">Сыграй 10 минут</div>
+          <div class="task-icon" style="color:var(--c-kaka)">❌</div>
+          <div class="task-name">Упущенная возможность</div>
+          <div class="task-timer" id="timer10">0 / 10 мин</div>
+          <button class="task-btn" id="btn10" disabled>ЗАБРАТЬ</button>
+        </div>
+
+        <div class="task-card">
+          <div class="task-title">Сыграй 30 минут</div>
+          <div class="task-icon" style="color:var(--c-kaka)">!?</div>
+          <div class="task-name">Неточность</div>
+          <div class="task-timer" id="timer30">0 / 30 мин</div>
+          <button class="task-btn" id="btn30" disabled>ЗАБРАТЬ</button>
+        </div>
+
+        <div class="task-card wide">
+          <div class="task-title">Сыграй 60 минут</div>
+          <div class="task-icon" style="color:var(--c-norm)">➡️</div>
+          <div class="task-name">Вынужденный</div>
+          <div class="task-timer" id="timer60">0 / 60 мин</div>
+          <button class="task-btn" id="btn60" disabled>ЗАБРАТЬ</button>
+        </div>
+
+        <div class="task-card wide" style="border-color: var(--accent);">
+          <div class="task-title" style="color: var(--accent);">Ежедневная награда</div>
+          <div class="task-icon" style="color:var(--c-kaka)">?</div>
+          <div class="task-name">Ошибка</div>
+          <button class="task-btn ready" id="btnDaily">ЗАБРАТЬ</button>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
 <!-- Модалка одиночного выигрыша -->
 <div class="overlay" id="overlay"><div class="win-card" id="winCard"><div class="win-icon" id="winIcon"></div><div class="win-rar" id="winRar"></div><div class="win-name" id="winName"></div><div class="win-price" id="winPrice"></div><button id="winClose">Забрать</button></div></div>
-
 <!-- Модалка мультивыигрыша -->
-<div class="overlay" id="multiOverlay">
-  <div class="win-card multi-drop-card">
-    <div class="win-rar" style="color:var(--accent); margin-bottom: 16px;">ТВОЙ ДРОП</div>
-    <div class="multi-grid" id="multiGrid"></div>
-    <button class="win-card" id="multiOpenMore" style="background:var(--accent); color:#000; font-weight:800; padding:14px; border:none; border-radius:8px; font-size:14px; margin-bottom:8px; width:100%; cursor:pointer; touch-action:manipulation;">Открыть ещё 6</button>
-    <button id="multiSellAll" style="background:transparent; color:var(--dim); border:1px solid var(--border); font-weight:700; padding:12px; border-radius:8px; font-size:14px; width:100%; cursor:pointer; touch-action:manipulation;">Продать всё</button>
-  </div>
-</div>
-
+<div class="overlay" id="multiOverlay"><div class="win-card multi-drop-card"><div class="win-rar" style="color:var(--accent); margin-bottom: 16px;">ТВОЙ ДРОП</div><div class="multi-grid" id="multiGrid"></div><button class="win-card" id="multiOpenMore" style="background:var(--accent); color:#000; font-weight:800; padding:14px; border:none; border-radius:8px; font-size:14px; margin-bottom:8px; width:100%; cursor:pointer; touch-action:manipulation;">Открыть ещё 6</button><button id="multiSellAll" style="background:transparent; color:var(--dim); border:1px solid var(--border); font-weight:700; padding:12px; border-radius:8px; font-size:14px; width:100%; cursor:pointer; touch-action:manipulation;">Продать всё</button></div></div>
 <!-- Инфо кейса -->
 <div class="overlay" id="infoOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title" id="infoTitle"></div><div class="info-sub" id="infoSub"></div></div><button class="info-close" id="infoClose">✕</button></div><div class="info-list" id="infoList"></div></div></div>
 <!-- Пикеры -->
@@ -268,14 +310,8 @@
   <div class="arena-countdown" id="arenaCountdown" style="display:none;">5</div>
   <div class="arena-head"><h2>Батл</h2><div style="font-size:12px;color:var(--dim);" id="arenaStatus">Ожидание...</div></div>
   <div class="arena-players">
-    <div class="arena-side">
-      <div class="as-name" id="arenaLeftName">—</div>
-      <div class="arena-vert-wrap"><div class="arena-vert-marker"></div><div class="arena-vert-track" id="arenaLeftTrack"></div></div>
-    </div>
-    <div class="arena-side">
-      <div class="as-name" id="arenaRightName">—</div>
-      <div class="arena-vert-wrap"><div class="arena-vert-marker"></div><div class="arena-vert-track" id="arenaRightTrack"></div></div>
-    </div>
+    <div class="arena-side"><div class="as-name" id="arenaLeftName">—</div><div class="arena-vert-wrap"><div class="arena-vert-marker"></div><div class="arena-vert-track" id="arenaLeftTrack"></div></div></div>
+    <div class="arena-side"><div class="as-name" id="arenaRightName">—</div><div class="arena-vert-wrap"><div class="arena-vert-marker"></div><div class="arena-vert-track" id="arenaRightTrack"></div></div></div>
   </div>
 </div>
 
@@ -338,6 +374,7 @@
       case 'battle_start': startBattleArena(msg.battle); break;
       case 'battle_progress': onBattleProgress(msg); break;
       case 'battle_finish': onBattleFinish(msg); break;
+      case 'task_reward': state.inventory.push(msg.item); renderInventory(); showWin(msg.item); break;
     }
   }
 
@@ -346,7 +383,7 @@
   
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-    const map = { inv: 'viewInv', cases: 'viewCases', upg: 'viewUpg', battles: 'viewBattles' };
+    const map = { inv: 'viewInv', cases: 'viewCases', upg: 'viewUpg', battles: 'viewBattles', tasks: 'viewTasks' };
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === map[name]));
   }
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
@@ -588,9 +625,7 @@
   function finishUpgradeSpin(msg, isFast) {
     const { result, chance, target, source, wonItem } = msg;
     state.upgRolling = false; state.goldActive = false; state.upgSource = null; state.upgTarget = null; renderUpgrader();
-    
-    if (isFast) renderInventory(); // Обновляем инвентарь сразу в быстром режиме
-
+    if (isFast) renderInventory();
     if (result === 'gold') { $('winCard').style.setProperty('--rar', '#fbbf24'); $('winIcon').textContent = '🌟'; $('winRar').textContent = 'ЗОЛОТО! x2'; $('winRar').style.color = '#fbbf24'; $('winName').textContent = wonItem.icon + ' ' + wonItem.name; $('winPrice').textContent = 'Шанс ' + fmtChance(chance) + ' • цель ' + target.name; }
     else if (result === 'win') { const rar = RARITIES[wonItem.rarity]; $('winCard').style.setProperty('--rar', rar.color); $('winIcon').textContent = '✅'; $('winRar').textContent = 'АПГРЕЙД УДАЛСЯ'; $('winRar').style.color = rar.color; $('winName').textContent = wonItem.icon + ' ' + wonItem.name; $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
     else { $('winCard').style.setProperty('--rar', '#ff2d6f'); $('winIcon').textContent = '💀'; $('winRar').textContent = 'ПРОВАЛ'; $('winRar').style.color = '#ff2d6f'; $('winName').textContent = 'Потерян: ' + (source ? source.icon + ' ' + source.name : 'предмет'); $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
@@ -695,6 +730,41 @@
     }, 4200);
   }
   $('battleResultClose').addEventListener('click', () => { $('battleResultOverlay').classList.remove('show'); send({ type: 'get_state' }); });
+
+  // ===== ЗАДАНИЯ (ТАЙМЕРЫ) =====
+  let taskStartTime = parseInt(localStorage.getItem('zd_task_start')) || Date.now();
+  localStorage.setItem('zd_task_start', taskStartTime);
+  let dailyLastClaim = parseInt(localStorage.getItem('zd_daily_claim')) || 0;
+
+  setInterval(() => {
+    if (!state.playerId) return;
+    const now = Date.now();
+    const elapsedMin = Math.floor((now - taskStartTime) / 60000);
+
+    // 10 минут
+    const rem10 = Math.max(0, 10 - elapsedMin);
+    $('timer10').textContent = `${Math.min(elapsedMin, 10)} / 10 мин`;
+    if (rem10 <= 0) { $('btn10').disabled = false; $('btn10').classList.add('ready'); } else { $('btn10').disabled = true; $('btn10').classList.remove('ready'); }
+
+    // 30 минут
+    const rem30 = Math.max(0, 30 - elapsedMin);
+    $('timer30').textContent = `${Math.min(elapsedMin, 30)} / 30 мин`;
+    if (rem30 <= 0) { $('btn30').disabled = false; $('btn30').classList.add('ready'); } else { $('btn30').disabled = true; $('btn30').classList.remove('ready'); }
+
+    // 60 минут
+    const rem60 = Math.max(0, 60 - elapsedMin);
+    $('timer60').textContent = `${Math.min(elapsedMin, 60)} / 60 мин`;
+    if (rem60 <= 0) { $('btn60').disabled = false; $('btn60').classList.add('ready'); } else { $('btn60').disabled = true; $('btn60').classList.remove('ready'); }
+  }, 1000);
+
+  $('btn10').addEventListener('click', () => send({ type: 'claim_task', taskId: '10m' }));
+  $('btn30').addEventListener('click', () => send({ type: 'claim_task', taskId: '30m' }));
+  $('btn60').addEventListener('click', () => send({ type: 'claim_task', taskId: '60m' }));
+  $('btnDaily').addEventListener('click', () => {
+    if (Date.now() - dailyLastClaim < 86400000) { alert('Ты уже забирал сегодня'); return; }
+    send({ type: 'claim_task', taskId: 'daily' });
+    dailyLastClaim = Date.now(); localStorage.setItem('zd_daily_claim', dailyLastClaim);
+  });
 
   $('logoBtn').addEventListener('click', () => { $('profileNick').textContent = state.nick || 'Ник'; $('profileBalance').textContent = fmt(state.balance) + ' ₽'; $('profileOverlay').classList.add('show'); });
   $('profileClose').addEventListener('click', () => $('profileOverlay').classList.remove('show'));
