@@ -18,6 +18,7 @@ const GOLD_MULT = 2.0;
 const GOLD_MIN_RATIO = 0.8;
 const CHANCE_MIN = 0.0001;
 const CHANCE_MAX = 0.99;
+const BATTLE_TIMEOUT = 8000;
 
 const RARITIES = {
   kaka:   { name: 'Кака',         color: '#6b6b6b' },
@@ -257,15 +258,30 @@ wss.on('connection', (ws) => {
     if (msg.type === 'earn_money') { p.balance += 0.1; sendStateTo(ws, c.playerId); saveData(); return; }
 
     if (msg.type === 'open_case') {
-      const caseObj = CASES.find(x => x.id === msg.caseId);
-      if (!caseObj) return;
-      if (p.balance < caseObj.price) return send(ws, { type: 'error', msg: 'no money' });
-      p.balance -= caseObj.price;
-      const rarity = rollRarity(caseObj.weights);
-      const item = makeItem(rarity);
-      p.inventory.push(item);
+      const caseIds = Array.isArray(msg.caseIds) ? msg.caseIds : [msg.caseId];
+      const items = [];
+      let totalCost = 0;
+      
+      for (const cid of caseIds) {
+        const caseObj = CASES.find(x => x.id === cid);
+        if (!caseObj) continue;
+        if (p.balance < caseObj.price + totalCost) break;
+        totalCost += caseObj.price;
+      }
+      if (totalCost === 0 || p.balance < totalCost) return send(ws, { type: 'error', msg: 'no money' });
+
+      p.balance -= totalCost;
+      for (const cid of caseIds.slice(0, 6)) {
+        const caseObj = CASES.find(x => x.id === cid);
+        if (!caseObj) continue;
+        const rarity = rollRarity(caseObj.weights);
+        const item = makeItem(rarity);
+        p.inventory.push(item);
+        items.push(item);
+      }
+      
       sendStateTo(ws, c.playerId);
-      send(ws, { type: 'case_opened', caseId: caseObj.id, item });
+      send(ws, { type: 'case_opened', items });
       saveData();
       return;
     }
@@ -283,6 +299,21 @@ wss.on('connection', (ws) => {
     if (msg.type === 'sell_all') {
       p.balance += p.inventory.reduce((s, i) => s + i.price, 0);
       p.inventory = [];
+      sendStateTo(ws, c.playerId);
+      saveData();
+      return;
+    }
+    if (msg.type === 'sell_many') {
+      const uids = msg.uids || [];
+      let sum = 0;
+      uids.forEach(uid => {
+        const idx = p.inventory.findIndex(i => i.uid === uid);
+        if (idx !== -1) {
+          sum += p.inventory[idx].price;
+          p.inventory.splice(idx, 1);
+        }
+      });
+      p.balance += sum;
       sendStateTo(ws, c.playerId);
       saveData();
       return;
@@ -377,6 +408,36 @@ wss.on('connection', (ws) => {
       });
       broadcastBattles();
       saveData();
+
+      // Автоматическое завершение, если кто-то не нажал
+      setTimeout(() => {
+        const curB = state.battles[b.id];
+        if (!curB || curB.status !== 'playing') return;
+        
+        let changed = false;
+        const participants2 = [curB.creatorId, curB.joinerId];
+        participants2.forEach(pid => {
+          if (!curB.drops[pid]) {
+            const drops = [];
+            for (const caseId of curB.caseIds) {
+              const caseObj = CASES.find(x => x.id === caseId);
+              drops.push(makeItem(rollRarity(caseObj.weights)));
+            }
+            curB.drops[pid] = drops;
+            changed = true;
+            
+            participants2.forEach(p2 => {
+              for (const [w, info] of clients) {
+                if (info.playerId === p2) send(w, { type: 'battle_progress', battleId: curB.id, playerId: pid, drops });
+              }
+            });
+          }
+        });
+        if (changed && curB.drops[curB.creatorId] && curB.drops[curB.joinerId]) {
+          finishBattle(curB);
+        }
+      }, BATTLE_TIMEOUT);
+
       return;
     }
 
@@ -384,7 +445,7 @@ wss.on('connection', (ws) => {
       const b = state.battles[msg.battleId];
       if (!b || b.status !== 'playing') return;
       if (b.creatorId !== c.playerId && b.joinerId !== c.playerId) return;
-      if (b.drops[c.playerId]) return; // Уже крутил
+      if (b.drops[c.playerId]) return;
 
       const drops = [];
       for (const caseId of b.caseIds) {
