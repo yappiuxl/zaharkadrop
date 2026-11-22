@@ -255,6 +255,35 @@ wss.on('connection', (ws) => {
     if (!p) return;
 
     if (msg.type === 'get_state') { sendStateTo(ws, c.playerId); return; }
+
+    if (msg.type === 'claim_task') {
+  const taskId = msg.taskId;
+  let itemName, itemPrice, itemRarity = 'kaka';
+  
+  if (taskId === '10m') { itemName = 'Упущенная возможность'; itemPrice = 10; itemRarity = 'kaka'; }
+  else if (taskId === '30m') { itemName = 'Неточность'; itemPrice = 100; itemRarity = 'kaka'; }
+  else if (taskId === '60m') { itemName = 'Вынужденный'; itemPrice = 500; itemRarity = 'norm'; }
+  else if (taskId === 'daily') { itemName = 'Ошибка'; itemPrice = 50; itemRarity = 'kaka'; }
+  else return;
+
+  // Защита от накрутки: 1 раз в сутки для всех
+  if (!p.taskClaims) p.taskClaims = {};
+  const now = Date.now();
+  const cooldown = taskId === 'daily' ? 86400000 : 86400000; // раз в сутки для всех
+  
+  if (p.taskClaims[taskId] && now - p.taskClaims[taskId] < cooldown) {
+    return send(ws, { type: 'error', msg: 'Уже получено' });
+  }
+  
+  p.taskClaims[taskId] = now;
+  const newItem = { icon: taskId==='60m'?'➡️':(taskId==='30m'?'!?':(taskId==='daily'?'?':'❌')), name: itemName, price: itemPrice, rarity: itemRarity, uid: now + Math.random() };
+  p.inventory.push(newItem);
+  
+  sendStateTo(ws, c.playerId);
+  send(ws, { type: 'task_reward', item: newItem });
+  saveData();
+  return;
+    }
     if (msg.type === 'earn_money') { p.balance += 0.1; sendStateTo(ws, c.playerId); saveData(); return; }
 
     if (msg.type === 'open_case') {
