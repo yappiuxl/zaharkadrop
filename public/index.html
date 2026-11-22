@@ -376,7 +376,8 @@
     { icon: '🍑', name: 'Персик',                price: 50000 },
     { icon: '🧢', name: 'Кепка',                 price: 67000 },
     { icon: '💝', name: 'Херт локет',            price: 250000 },
-    { icon: '🐸', name: 'Пепе',                  price: 1000000 }
+    { icon: '🐸', name: 'Пепе',                  price: 1000000 },
+    { icon: '👁️', name: 'Захарка',              price: 0, isPriceless: true }
   ];
 
   const LEVELS = [
@@ -628,7 +629,14 @@
     ITEMS.forEach(it => { if (it.price > source.price) list.push({ ...it }); });
     list.sort((a, b) => a.price - b.price); return list;
   }
-  function calcChance(source, target) { if (!source || !target) return null; const mult = target.price / source.price; let chance = (1 / mult); if (chance < 0.0001) return 0; return Math.min(0.99, chance); }
+  function calcChance(source, target) { 
+    if (!source || !target) return null; 
+    if (target.isPriceless) return 0.0001;
+    const mult = target.price / source.price; 
+    let chance = (1 / mult); 
+    if (chance < 0.0001) return 0; 
+    return Math.min(0.99, chance); 
+  }
   const WHEEL_R = 48, WHEEL_C = 50; const GOLD_CHANCE = 0.4, GOLD_SIZE = 0.10, GOLD_MIN_RATIO = 0.8;
   function polarToXY(angleDeg, r) { const a = (angleDeg - 90) * Math.PI / 180; return { x: WHEEL_C + r * Math.cos(a), y: WHEEL_C + r * Math.sin(a) }; }
   function arcPath(s, e, r) { const st = polarToXY(s, r), en = polarToXY(e, r); const large = (e - s) > 180 ? 1 : 0; return `M ${WHEEL_C} ${WHEEL_C} L ${st.x} ${st.y} A ${r} ${r} 0 ${large} 1 ${en.x} ${en.y} Z`; }
@@ -716,7 +724,7 @@
     const source = findItemByUid(state.upgSource); const target = state.upgTarget;
     if (!source || !target || state.upgRolling) return; const chance = calcChance(source, target); if (!chance) return;
     state.upgRolling = true; state.fastMode = isFast; state.goldActive = false; $('upgGo').disabled = true; $('upgFast').disabled = true;
-    send({ type: 'upgrade', sourceUid: source.uid, target: { icon: target.icon, name: target.name, price: target.price } });
+    send({ type: 'upgrade', sourceUid: source.uid, target: { icon: target.icon, name: target.name, price: target.price, isPriceless: target.isPriceless } });
   }
   $('upgGo').addEventListener('click', () => doUpgrade(false));
   $('upgFast').addEventListener('click', () => doUpgrade(true));
@@ -916,4 +924,4 @@
 })();
 </script>
 </body>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </html>
+</html>
