@@ -256,25 +256,6 @@
   .upg-btn.go { background: linear-gradient(90deg, var(--accent), #00b894); color: #000; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; }
   .upg-btn.clear { background: transparent; color: var(--dim); border: 1px solid var(--border); flex: 0 0 auto; padding: 14px 20px; }
 
-  .upg-section-title { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 4px 2px; }
-  .history { display: flex; flex-direction: column; gap: 4px; }
-  .hist-row {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 10px; background: var(--bg2); border-radius: 8px;
-    font-size: 11px; border-left: 3px solid var(--rar);
-  }
-  .hist-row.win { --rar: #22c55e; }
-  .hist-row.lose { --rar: #ff2d6f; }
-  .hist-row.gold { --rar: #fbbf24; }
-  .hist-row .hist-icon { font-size: 16px; }
-  .hist-row .hist-name { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .hist-row .hist-chance { color: var(--dim); font-variant-numeric: tabular-nums; }
-  .hist-row .hist-result { font-weight: 700; }
-  .hist-row.win .hist-result { color: #22c55e; }
-  .hist-row.lose .hist-result { color: #ff2d6f; }
-  .hist-row.gold .hist-result { color: #fbbf24; }
-  .hist-empty { color: var(--dim); font-size: 11px; text-align: center; padding: 12px; }
-
   /* Батлы */
   .battles-wrap { display: flex; flex-direction: column; gap: 10px; }
   .battle-create-btn {
@@ -487,8 +468,6 @@
           <button class="upg-btn go" id="upgGo" disabled>Апгрейд</button>
           <button class="upg-btn clear" id="upgClear">Сброс</button>
         </div>
-        <div class="upg-section-title">История</div>
-        <div class="history" id="upgHistory"></div>
       </div>
     </div>
 
@@ -496,7 +475,7 @@
     <div class="view" id="viewBattles">
       <div class="battles-wrap">
         <button class="battle-create-btn" id="battleCreateBtn">Создать батл</button>
-        <div class="upg-section-title">Открытые батлы</div>
+        <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;font-weight:700;padding:4px 2px;">Открытые батлы</div>
         <div id="battlesList"></div>
       </div>
     </div>
@@ -735,7 +714,6 @@
         state.history = msg.player.history;
         renderBalance();
         renderInventory();
-        renderHistory();
         updateCaseStates();
         break;
 
@@ -745,7 +723,6 @@
         break;
 
       case 'upgrade_result':
-        // ВАЖНО: передаем и msg.source, чтобы знать, что потеряли
         state.pendingUpgDrop = msg;
         spinUpgradeWheel(msg);
         break;
@@ -779,7 +756,6 @@
     renderCases();
     renderUpgrader();
     renderBattles();
-    renderHistory();
     updateCaseStates();
   }
 
@@ -1102,30 +1078,6 @@
     elWheelSvg.style.transition = 'none';
     elWheelSvg.style.transform = 'rotate(0deg)';
     $('upgGo').disabled = !(source && target) || state.upgRolling || chance === 0;
-    renderHistory();
-  }
-
-  function renderHistory() {
-    const el = $('upgHistory');
-    if (state.history.length === 0) {
-      el.innerHTML = '<div class="hist-empty">Пока пусто. Сделай первый апгрейд.</div>';
-      return;
-    }
-    el.innerHTML = '';
-    state.history.forEach(h => {
-      const row = document.createElement('div');
-      const cls = h.result === 'gold' ? 'gold' : (h.result === 'win' ? 'win' : 'lose');
-      row.className = 'hist-row ' + cls;
-      const icon = h.result === 'gold' ? '🌟' : (h.result === 'win' ? '✅' : '💀');
-      const res = h.result !== 'lose' ? '+' + fmt(h.gain) + ' ₽' : '−' + fmt(h.loss) + ' ₽';
-      row.innerHTML = `
-        <div class="hist-icon">${icon}</div>
-        <div class="hist-name">${h.fromIcon} ${h.fromName} → ${h.toIcon} ${h.toName}</div>
-        <div class="hist-chance">${h.chance}</div>
-        <div class="hist-result">${res}</div>
-      `;
-      el.appendChild(row);
-    });
   }
 
   function openPicker() {
@@ -1502,4 +1454,4 @@
 })();
 </script>
 </body>
-</html>
+ </html>
