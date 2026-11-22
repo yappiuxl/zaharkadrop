@@ -56,7 +56,6 @@
   .item.kaka { --rar: var(--c-kaka); } .item.norm { --rar: var(--c-norm); } .item.rare { --rar: var(--c-rare); } .item.epic { --rar: var(--c-epic); } .item.legend { --rar: var(--c-legend); } .item.true { --rar: var(--c-true); }
   .cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-content: start; }
   .case { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; }
-  .case:active:not(.disabled) { transform: scale(0.98); border-color: var(--accent); }
   .case.disabled .case-open { opacity: 0.4; pointer-events: none; }
   .case-open { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; width: 100%; touch-action: manipulation; }
   .case .case-icon { font-size: 42px; }
@@ -64,6 +63,16 @@
   .case .case-price { font-size: 15px; font-weight: 700; color: var(--accent); }
   .case-info-btn { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); color: var(--dim); font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; touch-action: manipulation; }
   .case-info-btn::after { content: 'i'; font-style: italic; }
+  
+  /* Мультиоткрытие */
+  .multi-drop-card { max-width: 500px; width: 100%; }
+  .multi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .multi-item { background: var(--bg2); border: 1px solid var(--border); border-bottom: 4px solid var(--rar); border-radius: 8px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+  .multi-item .mi-icon { font-size: 28px; line-height: 1; font-weight: 700; }
+  .multi-item .mi-name { font-size: 11px; font-weight: 600; line-height: 1.1; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .multi-item .mi-price { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+  .multi-item .mi-sell { width: 100%; padding: 6px 0; border-radius: 6px; border: none; background: #2a2a42; color: var(--text); font-size: 10px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+  .multi-item .mi-sell:active { background: var(--c-true); color: #fff; }
 
   /* Апгрейдер */
   .upgrader { display: flex; flex-direction: column; gap: 12px; }
@@ -83,10 +92,16 @@
   .wheel-center .wc-chance { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
   .wheel-center .wc-mult { font-size: 9px; color: var(--dim); font-weight: 600; }
   .wheel-pointer { position: absolute; top: -4px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 16px solid var(--text); z-index: 3; }
+  
+  .upg-presets { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+  .preset-btn { padding: 8px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
+  .preset-btn:active { background: var(--accent); color: #000; border-color: var(--accent); }
+
   .upg-actions { display: flex; gap: 8px; }
   .upg-btn { flex: 1; padding: 14px; font-size: 14px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; touch-action: manipulation; }
   .upg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .upg-btn.go { background: linear-gradient(90deg, var(--accent), #00b894); color: #000; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; }
+  .upg-btn.fast { background: #fbbf24; color: #000; font-size: 20px; flex: 0 0 60px; padding: 0; }
   .upg-btn.clear { background: transparent; color: var(--dim); border: 1px solid var(--border); flex: 0 0 auto; padding: 14px 20px; }
 
   /* Батлы */
@@ -111,7 +126,6 @@
   .arena-players { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; min-height: 0; }
   .arena-side { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow: hidden; }
   .arena-side .as-name { font-weight: 700; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
-  .arena-side .as-sum { text-align: center; color: var(--accent); font-weight: 700; font-size: 14px; flex-shrink: 0; }
   .arena-vert-wrap { flex: 1; position: relative; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-height: 0; }
   .arena-vert-wrap::before, .arena-vert-wrap::after { content: ''; position: absolute; left: 0; right: 0; height: 40px; z-index: 5; pointer-events: none; }
   .arena-vert-wrap::before { top: 0; background: linear-gradient(180deg, var(--bg2), transparent); }
@@ -163,6 +177,7 @@
     .cases { grid-template-columns: repeat(2, 1fr); gap: 8px; } .case .case-icon { font-size: 32px; }
     .wheel-wrap { width: 110px; height: 110px; } .upg-slot { max-width: 110px; }
     .arena-countdown { font-size: 80px; }
+    .multi-grid { gap: 4px; } .multi-item .mi-icon { font-size: 20px; } .multi-item .mi-name { font-size: 9px; height: 20px; }
   }
 </style>
 </head>
@@ -200,7 +215,21 @@
           </div>
           <div class="upg-slot" id="upgTargetSlot"></div>
         </div>
-        <div class="upg-actions"><button class="upg-btn go" id="upgGo" disabled>Апгрейд</button><button class="upg-btn clear" id="upgClear">Сброс</button></div>
+        
+        <div class="upg-presets" id="upgPresets">
+          <button class="preset-btn" data-mult="2">×2</button>
+          <button class="preset-btn" data-mult="4">×4</button>
+          <button class="preset-btn" data-mult="8">×8</button>
+          <button class="preset-btn" data-chance="35">35%</button>
+          <button class="preset-btn" data-chance="50">50%</button>
+          <button class="preset-btn" data-chance="75">75%</button>
+        </div>
+
+        <div class="upg-actions">
+          <button class="upg-btn go" id="upgGo" disabled>Апгрейд</button>
+          <button class="upg-btn fast" id="upgFast" disabled>⚡️</button>
+          <button class="upg-btn clear" id="upgClear">Сброс</button>
+        </div>
       </div>
     </div>
     <div class="view" id="viewBattles">
@@ -213,22 +242,38 @@
   </main>
 </div>
 
+<!-- Модалка одиночного выигрыша -->
 <div class="overlay" id="overlay"><div class="win-card" id="winCard"><div class="win-icon" id="winIcon"></div><div class="win-rar" id="winRar"></div><div class="win-name" id="winName"></div><div class="win-price" id="winPrice"></div><button id="winClose">Забрать</button></div></div>
+
+<!-- Модалка мультивыигрыша -->
+<div class="overlay" id="multiOverlay">
+  <div class="win-card multi-drop-card">
+    <div class="win-rar" style="color:var(--accent); margin-bottom: 16px;">ТВОЙ ДРОП</div>
+    <div class="multi-grid" id="multiGrid"></div>
+    <button class="win-card" id="multiOpenMore" style="background:var(--accent); color:#000; font-weight:800; padding:14px; border:none; border-radius:8px; font-size:14px; margin-bottom:8px; width:100%; cursor:pointer; touch-action:manipulation;">Открыть ещё 6</button>
+    <button id="multiSellAll" style="background:transparent; color:var(--dim); border:1px solid var(--border); font-weight:700; padding:12px; border-radius:8px; font-size:14px; width:100%; cursor:pointer; touch-action:manipulation;">Продать всё</button>
+  </div>
+</div>
+
+<!-- Инфо кейса -->
 <div class="overlay" id="infoOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title" id="infoTitle"></div><div class="info-sub" id="infoSub"></div></div><button class="info-close" id="infoClose">✕</button></div><div class="info-list" id="infoList"></div></div></div>
+<!-- Пикеры -->
 <div class="overlay" id="pickerOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title">Выбери ставку</div><div class="info-sub">Предмет из инвентаря</div></div><button class="info-close" id="pickerClose">✕</button></div><div class="picker-list" id="pickerList"></div></div></div>
 <div class="overlay" id="targetPickerOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title">Выбери цель</div><div class="info-sub" id="targetPickerSub"></div></div><button class="info-close" id="targetPickerClose">✕</button></div><div class="picker-list" id="targetPickerList"></div></div></div>
+<!-- Создание батла -->
 <div class="overlay" id="battleCreateOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title">Создать батл</div><div class="info-sub" id="battleCreateSub">Выбери кейсы (до 20)</div></div><button class="info-close" id="battleCreateClose">✕</button></div><div class="picker-list" id="battleCasePicker"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px;"><div style="font-size:13px;color:var(--dim);">Итого: <b id="battleTotal" style="color:var(--accent);">0 ₽</b></div><button id="battleCreateConfirm" style="padding:10px 20px;border-radius:8px;border:none;background:var(--accent);color:#000;font-weight:700;cursor:pointer;">Создать</button></div></div></div>
 
+<!-- АРЕНА БАТЛА -->
 <div class="battle-arena" id="battleArena">
   <div class="arena-countdown" id="arenaCountdown" style="display:none;">5</div>
   <div class="arena-head"><h2>Батл</h2><div style="font-size:12px;color:var(--dim);" id="arenaStatus">Ожидание...</div></div>
   <div class="arena-players">
     <div class="arena-side">
-      <div class="as-name" id="arenaLeftName">—</div><div class="as-sum" id="arenaLeftSum">0 ₽</div>
+      <div class="as-name" id="arenaLeftName">—</div>
       <div class="arena-vert-wrap"><div class="arena-vert-marker"></div><div class="arena-vert-track" id="arenaLeftTrack"></div></div>
     </div>
     <div class="arena-side">
-      <div class="as-name" id="arenaRightName">—</div><div class="as-sum" id="arenaRightSum">0 ₽</div>
+      <div class="as-name" id="arenaRightName">—</div>
       <div class="arena-vert-wrap"><div class="arena-vert-marker"></div><div class="arena-vert-track" id="arenaRightTrack"></div></div>
     </div>
   </div>
@@ -249,9 +294,8 @@
   const fmtChance = (c) => { if (c == null) return '—'; const pct = c * 100; if (pct === 0) return '0.00%'; if (pct < 1) return pct.toFixed(2) + '%'; return pct.toFixed(1) + '%'; };
   const chanceColor = (chance) => { if (chance == null) return '#7a7a95'; if (chance === 0) return '#3a3a50'; const p = Math.max(0, Math.min(1, chance)); return `hsl(${p * 130}, 85%, 55%)`; };
 
-  const state = { playerId: localStorage.getItem('zd_pid'), nick: localStorage.getItem('zd_nick'), balance: 0, inventory: [], history: [], cases: [], battles: [], rolling: false, upgSource: null, upgTarget: null, upgRolling: false, goldActive: false, pendingCaseDrop: null, pendingUpgDrop: null };
+  const state = { playerId: localStorage.getItem('zd_pid'), nick: localStorage.getItem('zd_nick'), balance: 0, inventory: [], cases: [], battles: [], rolling: false, upgSource: null, upgTarget: null, upgRolling: false, goldActive: false, pendingCaseDrop: null, pendingUpgDrop: null, lastMultiCaseIds: null };
   let ws = null;
-  let reconnectTimer = null;
 
   function connect() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -263,7 +307,7 @@
       ws.send(JSON.stringify({ type: 'hello', playerId: state.playerId, nick: state.nick }));
     };
     ws.onmessage = (ev) => { let msg; try { msg = JSON.parse(ev.data); } catch { return; } handleMessage(msg); };
-    ws.onclose = () => { clearTimeout(reconnectTimer); reconnectTimer = setTimeout(connect, 2000); };
+    ws.onclose = () => { setTimeout(connect, 2000); };
     ws.onerror = () => {};
   }
   function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
@@ -271,19 +315,35 @@
   function handleMessage(msg) {
     switch (msg.type) {
       case 'hello_ok':
-        state.cases = msg.cases; state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.history = msg.player.history; state.nick = msg.player.nick; renderAll(); break;
+        state.cases = msg.cases; state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.nick = msg.player.nick; renderAll(); break;
       case 'state':
-        state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.history = msg.player.history; renderBalance(); renderInventory(); updateCaseStates(); break;
-      case 'case_opened': state.pendingCaseDrop = msg.item; animateRollLocal(state.pendingCaseDrop); break;
-      case 'upgrade_result': state.pendingUpgDrop = msg; spinUpgradeWheel(msg); break;
+        state.balance = msg.player.balance; state.inventory = msg.player.inventory; renderBalance(); renderInventory(); updateCaseStates(); break;
+      case 'case_opened':
+        if (msg.items.length === 1) {
+          state.pendingCaseDrop = msg.items[0];
+          if (state.fastMode) { showWin(state.pendingCaseDrop); state.fastMode = false; state.rolling = false; updateCaseStates(); }
+          else animateRollLocal(state.pendingCaseDrop);
+        } else {
+          state.pendingCaseDrop = msg.items;
+          showMultiWin(msg.items);
+          state.rolling = false; updateCaseStates();
+        }
+        break;
+      case 'upgrade_result':
+        state.pendingUpgDrop = msg;
+        if (state.fastMode) { finishUpgradeSpin(msg, true); state.fastMode = false; }
+        else spinUpgradeWheel(msg);
+        break;
       case 'battles': state.battles = msg.battles; renderBattles(); break;
       case 'battle_start': startBattleArena(msg.battle); break;
       case 'battle_progress': onBattleProgress(msg); break;
       case 'battle_finish': onBattleFinish(msg); break;
     }
   }
+
   function renderAll() { renderBalance(); renderInventory(); renderCases(); renderUpgrader(); renderBattles(); updateCaseStates(); }
   function renderBalance() { $('balance').textContent = fmt(state.balance); $('profileBalance').textContent = fmt(state.balance) + ' ₽'; }
+  
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     const map = { inv: 'viewInv', cases: 'viewCases', upg: 'viewUpg', battles: 'viewBattles' };
@@ -308,12 +368,32 @@
     const el = $('cases'); el.innerHTML = '';
     state.cases.forEach(c => {
       const div = document.createElement('div'); div.className = 'case'; div.dataset.id = c.id;
-      div.innerHTML = `<button class="case-info-btn" data-info="${c.id}"></button><div class="case-open" data-open="${c.id}"><div class="case-icon">${c.icon}</div><div class="case-name">${c.name}</div><div class="case-price">${fmt(c.price)} ₽</div></div>`;
+      div.innerHTML = `
+        <button class="case-info-btn" data-info="${c.id}"></button>
+        <div class="case-open" data-open="${c.id}">
+          <div class="case-icon">${c.icon}</div>
+          <div class="case-name">${c.name}</div>
+          <div class="case-price">${fmt(c.price)} ₽</div>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:4px;">
+          <button style="flex:1;padding:8px;border-radius:6px;border:none;background:var(--bg2);color:var(--text);font-weight:700;cursor:pointer;" data-multi="${c.id}">Открыть x6</button>
+          <button style="flex:0 0 40px;padding:8px;border-radius:6px;border:none;background:#fbbf24;color:#000;font-weight:700;cursor:pointer;" data-fast="${c.id}">⚡️</button>
+        </div>
+      `;
       el.appendChild(div);
     });
     el.querySelectorAll('[data-open]').forEach(e => e.addEventListener('click', () => {
       if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.open);
-      if (!c || state.balance < c.price) return; state.rolling = true; updateCaseStates(); send({ type: 'open_case', caseId: c.id });
+      if (!c || state.balance < c.price) return; state.rolling = true; state.fastMode = false; updateCaseStates(); send({ type: 'open_case', caseIds: [c.id] });
+    }));
+    el.querySelectorAll('[data-multi]').forEach(e => e.addEventListener('click', () => {
+      if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.multi);
+      if (!c || state.balance < c.price * 6) return;
+      state.rolling = true; state.fastMode = false; updateCaseStates(); send({ type: 'open_case', caseIds: Array(6).fill(c.id) });
+    }));
+    el.querySelectorAll('[data-fast]').forEach(e => e.addEventListener('click', () => {
+      if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.fast);
+      if (!c || state.balance < c.price) return; state.rolling = true; state.fastMode = true; updateCaseStates(); send({ type: 'open_case', caseIds: [c.id] });
     }));
     el.querySelectorAll('[data-info]').forEach(e => e.addEventListener('click', (ev) => {
       ev.stopPropagation(); const c = state.cases.find(x => x.id === e.dataset.info); if (c) showCaseInfo(c);
@@ -349,6 +429,33 @@
     const rar = RARITIES[item.rarity]; $('winCard').style.setProperty('--rar', rar.color); $('winIcon').textContent = item.icon; $('winRar').textContent = rar.name; $('winRar').style.color = rar.color; $('winName').textContent = item.name; $('winPrice').textContent = fmt(item.price) + ' ₽'; $('overlay').classList.add('show');
   }
   $('winClose').addEventListener('click', () => { $('overlay').classList.remove('show'); renderInventory(); updateCaseStates(); state.rolling = false; });
+
+  let lastMultiItems = [];
+  function showMultiWin(items) {
+    lastMultiItems = items;
+    const grid = $('multiGrid'); grid.innerHTML = '';
+    let totalSum = 0;
+    items.forEach(it => {
+      totalSum += it.price;
+      const div = document.createElement('div'); div.className = 'multi-item ' + it.rarity;
+      div.innerHTML = `<div class="mi-icon">${it.icon}</div><div class="mi-name">${it.name}</div><div class="mi-price">${fmt(it.price)} ₽</div><button class="mi-sell">Продать</button>`;
+      div.querySelector('.mi-sell').addEventListener('click', () => { send({ type: 'sell_many', uids: [it.uid] }); div.style.opacity = '0.3'; div.querySelector('.mi-sell').disabled = true; });
+      grid.appendChild(div);
+    });
+    $('multiOpenMore').textContent = `Открыть ещё 6 (${fmt(totalSum)} ₽)`;
+    $('multiSellAll').textContent = `Продать всё (${fmt(totalSum)} ₽)`;
+    $('multiOverlay').classList.add('show');
+  }
+  $('multiSellAll').addEventListener('click', () => {
+    const uids = lastMultiItems.map(i => i.uid);
+    send({ type: 'sell_many', uids });
+    $('multiOverlay').classList.remove('show'); renderInventory(); state.rolling = false; updateCaseStates();
+  });
+  $('multiOpenMore').addEventListener('click', () => {
+    $('multiOverlay').classList.remove('show');
+    state.rolling = true; updateCaseStates(); send({ type: 'open_case', caseIds: state.lastMultiCaseIds });
+  });
+
   function showCaseInfo(c) {
     $('infoTitle').textContent = c.icon + ' ' + c.name; $('infoSub').textContent = 'Цена: ' + fmt(c.price) + ' ₽'; $('infoList').innerHTML = '';
     RARITY_ORDER.forEach(rar => {
@@ -401,8 +508,26 @@
       tgtEl.onclick = () => { if (state.upgRolling) return; if (!source) { openPicker(); return; } openTargetPicker(); };
     }
     const chance = calcChance(source, target); renderWheel(chance, state.goldActive && state.upgRolling); setWheelInfo(chance);
-    elWheelSvg.style.transition = 'none'; elWheelSvg.style.transform = 'rotate(0deg)'; $('upgGo').disabled = !(source && target) || state.upgRolling || chance === 0;
+    elWheelSvg.style.transition = 'none'; elWheelSvg.style.transform = 'rotate(0deg)';
+    const btnGo = $('upgGo'), btnFast = $('upgFast');
+    btnGo.disabled = !(source && target) || state.upgRolling || chance === 0;
+    btnFast.disabled = btnGo.disabled;
   }
+  
+  // ПРЕСЕТЫ
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const source = findItemByUid(state.upgSource); if (!source) return;
+      const mult = btn.dataset.mult ? parseFloat(btn.dataset.mult) : null;
+      const chance = btn.dataset.chance ? parseFloat(btn.dataset.chance) / 100 : null;
+      let wantedPrice = mult ? source.price * mult : source.price / chance;
+      let all = []; RARITY_ORDER.forEach(r => ITEMS[r].forEach(it => all.push({ rarity: r, ...it })));
+      all.sort((a, b) => Math.abs(a.price - wantedPrice) - Math.abs(b.price - wantedPrice));
+      state.upgTarget = all[0];
+      renderUpgrader();
+    });
+  });
+
   function openPicker() {
     const el = $('pickerList'); el.innerHTML = '';
     if (state.inventory.length === 0) { el.innerHTML = '<div class="empty">Инвентарь пуст.<br>Открывай кейсы.</div>'; } else {
@@ -435,12 +560,16 @@
   $('pickerClose').addEventListener('click', () => $('pickerOverlay').classList.remove('show'));
   $('targetPickerClose').addEventListener('click', () => $('targetPickerOverlay').classList.remove('show'));
   $('upgClear').addEventListener('click', () => { if (state.upgRolling) return; state.upgSource = null; state.upgTarget = null; state.goldActive = false; renderUpgrader(); });
-  $('upgGo').addEventListener('click', () => {
+  
+  function doUpgrade(isFast) {
     const source = findItemByUid(state.upgSource); const target = state.upgTarget;
     if (!source || !target || state.upgRolling) return; const chance = calcChance(source, target); if (!chance) return;
-    state.upgRolling = true; state.goldActive = false; $('upgGo').disabled = true;
+    state.upgRolling = true; state.fastMode = isFast; state.goldActive = false; $('upgGo').disabled = true; $('upgFast').disabled = true;
     send({ type: 'upgrade', sourceUid: source.uid, target: { rarity: target.rarity, icon: target.icon, name: target.name, price: target.price } });
-  });
+  }
+  $('upgGo').addEventListener('click', () => doUpgrade(false));
+  $('upgFast').addEventListener('click', () => doUpgrade(true));
+
   function spinUpgradeWheel(msg) {
     const { result, chance, target, goldActive, source } = msg; state.goldActive = goldActive; renderWheel(chance, goldActive);
     const g = wheelGeometry(chance, goldActive); let targetAngle;
@@ -453,13 +582,19 @@
     const turns = 4 + Math.floor(Math.random() * 3); const finalRotation = -targetAngle - turns * 360;
     elWheelSvg.style.transition = 'none'; elWheelSvg.style.transform = 'rotate(0deg)'; void elWheelSvg.offsetWidth;
     elWheelSvg.style.transition = 'transform 4000ms cubic-bezier(0.15, 0.9, 0.25, 1)'; elWheelSvg.style.transform = `rotate(${finalRotation}deg)`;
-    setTimeout(() => {
-      state.upgRolling = false; state.goldActive = false; state.upgSource = null; state.upgTarget = null; renderUpgrader();
-      if (result === 'gold') { $('winCard').style.setProperty('--rar', '#fbbf24'); $('winIcon').textContent = '🌟'; $('winRar').textContent = 'ЗОЛОТО! x2'; $('winRar').style.color = '#fbbf24'; $('winName').textContent = msg.wonItem.icon + ' ' + msg.wonItem.name; $('winPrice').textContent = 'Шанс ' + fmtChance(chance) + ' • цель ' + target.name; }
-      else if (result === 'win') { const rar = RARITIES[msg.wonItem.rarity]; $('winCard').style.setProperty('--rar', rar.color); $('winIcon').textContent = '✅'; $('winRar').textContent = 'АПГРЕЙД УДАЛСЯ'; $('winRar').style.color = rar.color; $('winName').textContent = msg.wonItem.icon + ' ' + msg.wonItem.name; $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
-      else { $('winCard').style.setProperty('--rar', '#ff2d6f'); $('winIcon').textContent = '💀'; $('winRar').textContent = 'ПРОВАЛ'; $('winRar').style.color = '#ff2d6f'; $('winName').textContent = 'Потерян: ' + (source ? source.icon + ' ' + source.name : 'предмет'); $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
-      $('overlay').classList.add('show');
-    }, 4100);
+    setTimeout(() => finishUpgradeSpin(msg, false), 4100);
+  }
+
+  function finishUpgradeSpin(msg, isFast) {
+    const { result, chance, target, source, wonItem } = msg;
+    state.upgRolling = false; state.goldActive = false; state.upgSource = null; state.upgTarget = null; renderUpgrader();
+    
+    if (isFast) renderInventory(); // Обновляем инвентарь сразу в быстром режиме
+
+    if (result === 'gold') { $('winCard').style.setProperty('--rar', '#fbbf24'); $('winIcon').textContent = '🌟'; $('winRar').textContent = 'ЗОЛОТО! x2'; $('winRar').style.color = '#fbbf24'; $('winName').textContent = wonItem.icon + ' ' + wonItem.name; $('winPrice').textContent = 'Шанс ' + fmtChance(chance) + ' • цель ' + target.name; }
+    else if (result === 'win') { const rar = RARITIES[wonItem.rarity]; $('winCard').style.setProperty('--rar', rar.color); $('winIcon').textContent = '✅'; $('winRar').textContent = 'АПГРЕЙД УДАЛСЯ'; $('winRar').style.color = rar.color; $('winName').textContent = wonItem.icon + ' ' + wonItem.name; $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
+    else { $('winCard').style.setProperty('--rar', '#ff2d6f'); $('winIcon').textContent = '💀'; $('winRar').textContent = 'ПРОВАЛ'; $('winRar').style.color = '#ff2d6f'; $('winName').textContent = 'Потерян: ' + (source ? source.icon + ' ' + source.name : 'предмет'); $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
+    $('overlay').classList.add('show');
   }
 
   // ===== БАТЛЫ =====
@@ -502,7 +637,7 @@
     $('battleArena').classList.add('show'); $('arenaStatus').textContent = 'Приготовьтесь!';
     const isCreator = state.playerId === battle.creatorId; const myNick = isCreator ? battle.creatorNick : battle.joinerNick; const oppNick = isCreator ? battle.joinerNick : battle.creatorNick;
     $('arenaLeftName').textContent = myNick + ' (ты)'; $('arenaRightName').textContent = oppNick;
-    $('arenaLeftSum').textContent = '0 ₽'; $('arenaRightSum').textContent = '0 ₽'; $('arenaLeftTrack').innerHTML = ''; $('arenaRightTrack').innerHTML = '';
+    $('arenaLeftTrack').innerHTML = ''; $('arenaRightTrack').innerHTML = '';
     $('arenaLeftTrack').dataset.animating = 'false'; $('arenaRightTrack').dataset.animating = 'false';
 
     arenaState = { battle, myId: state.playerId, myDrops: null, oppDrops: null };
@@ -513,7 +648,7 @@
       if (count > 0) { countEl.textContent = count; countEl.style.animation = 'none'; void countEl.offsetWidth; countEl.style.animation = 'popIn 0.5s ease-out'; }
       else {
         clearInterval(timer); countEl.style.display = 'none'; $('arenaStatus').textContent = 'Крутим!';
-        send({ type: 'battle_roll', battleId: arenaState.battle.id }); // Отправляем запрос на сервер
+        send({ type: 'battle_roll', battleId: arenaState.battle.id });
       }
     }, 1000);
   }
@@ -521,9 +656,6 @@
   function onBattleProgress(msg) {
     if (!arenaState || msg.battleId !== arenaState.battle.id) return;
     const isMe = msg.playerId === state.playerId;
-    if (isMe) arenaState.myDrops = msg.drops; else arenaState.oppDrops = msg.drops;
-    let sum = msg.drops.reduce((s, i) => s + i.price, 0);
-    if (isMe) $('arenaLeftSum').textContent = fmt(sum) + ' ₽'; else $('arenaRightSum').textContent = fmt(sum) + ' ₽';
     startVerticalRoll(msg.drops, isMe ? 'arenaLeftTrack' : 'arenaRightTrack');
   }
 
@@ -553,7 +685,7 @@
     $('arenaStatus').textContent = 'Батл завершён!';
     setTimeout(() => {
       $('battleArena').classList.remove('show'); const iWon = msg.winnerId === state.playerId;
-      send({ type: 'get_state' }); // Обновляем инвентарь
+      send({ type: 'get_state' });
       $('battleResultCard').style.setProperty('--rar', iWon ? '#fbbf24' : '#ff2d6f'); $('battleResultIcon').textContent = iWon ? '🏆' : '💀';
       $('battleResultRar').textContent = iWon ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ'; $('battleResultRar').style.color = iWon ? '#fbbf24' : '#ff2d6f';
       $('battleResultName').textContent = iWon ? 'Ты забираешь всё!' : 'Ты остался ни с чем';
