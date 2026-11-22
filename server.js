@@ -10,7 +10,6 @@ const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 const SAVE_INTERVAL = 5000;
 const START_BALANCE = 100;
-const HOUSE_EDGE = 1.0;
 const MAX_HISTORY = 12;
 const GOLD_CHANCE = 0.4;
 const GOLD_SIZE = 0.10;
@@ -20,85 +19,110 @@ const CHANCE_MIN = 0.0001;
 const CHANCE_MAX = 0.99;
 const BATTLE_TIMEOUT = 8000;
 
-const RARITIES = {
-  kaka:   { name: 'Кака',         color: '#6b6b6b' },
-  norm:   { name: 'Норм',         color: '#4a9e5c' },
-  rare:   { name: 'Редкий',       color: '#3b82f6' },
-  epic:   { name: 'Эпический',    color: '#a855f7' },
-  legend: { name: 'Легендарный',  color: '#f59e0b' },
-  true:   { name: 'true Zaharka', color: '#ff2d6f' }
-};
-const RARITY_ORDER = ['kaka', 'norm', 'rare', 'epic', 'legend', 'true'];
-
-const ITEMS = {
-  kaka: [
-    { icon: '??',  name: 'Зевок',                price: 1   },
-    { icon: '❌',  name: 'Упущенная возможность', price: 10  },
-    { icon: '?',   name: 'Ошибка',               price: 50  },
-    { icon: '!?',  name: 'Неточность',           price: 100 }
-  ],
-  norm: [
-    { icon: '➡️', name: 'Вынужденный',           price: 500  },
-    { icon: '📖', name: 'Теоретический',         price: 1000 }
-  ],
-  rare: [
-    { icon: '👍', name: 'Хороший',               price: 2000 },
-    { icon: '✔️', name: 'Отличный',              price: 3000 }
-  ],
-  epic: [
-    { icon: '⭐️', name: 'Лучший',                price: 5000 }
-  ],
-  legend: [
-    { icon: '!',  name: 'Замечательный',         price: 10000 }
-  ],
-  true: [
-    { icon: '!!', name: 'БРИЛЛИАНТ',             price: 25000 }
-  ]
-};
-
-const AVG = {};
-RARITY_ORDER.forEach(r => {
-  const arr = ITEMS[r];
-  AVG[r] = arr.reduce((s, i) => s + i.price, 0) / arr.length;
-});
-
-const BASE_SHAPE = { kaka: 40, norm: 35, rare: 18 };
-const TAIL = ['epic', 'legend', 'true'];
-
-function computeWeights(targetPrice) {
-  const solve = (k) => {
-    const w = {};
-    for (const r in BASE_SHAPE) w[r] = BASE_SHAPE[r];
-    for (const r of TAIL) w[r] = k;
-    const total = Object.values(w).reduce((a, b) => a + b, 0);
-    let ev = 0;
-    for (const r in w) ev += (w[r] / total) * AVG[r];
-    return ev;
-  };
-  let lo = 1e-9, hi = 1e9;
-  for (let i = 0; i < 200; i++) {
-    const mid = Math.sqrt(lo * hi);
-    if (solve(mid) < targetPrice) lo = mid; else hi = mid;
-  }
-  const k = Math.sqrt(lo * hi);
-  const w = {};
-  for (const r in BASE_SHAPE) w[r] = BASE_SHAPE[r];
-  for (const r of TAIL) w[r] = k;
-  return w;
-}
-
-const CASES = [
-  { id: 'starter', name: 'Стартовый',    icon: '📦', price: 100,   desc: 'Шанс на что-то норм' },
-  { id: 'middle',  name: 'Средний',      icon: '🎁', price: 500,   desc: 'Больше шансов на редкое' },
-  { id: 'pro',     name: 'Про',          icon: '🧰', price: 2000,  desc: 'Только серьёзные вещи' },
-  { id: 'zaharka', name: 'Захарка-кейс', icon: '👁️', price: 10000, desc: 'Шанс на БРИЛЛИАНТ' }
+// БАЗА ПРЕДМЕТОВ (БЕЗ РЕДКОСТЕЙ)
+const ITEMS = [
+  { icon: '??',  name: 'Зевок',                price: 1   },
+  { icon: '♟️', name: 'Пешка',                 price: 5   },
+  { icon: '❌',  name: 'Упущенная возможность', price: 10  },
+  { icon: '♞', name: 'Конь',                  price: 15  },
+  { icon: '♝', name: 'Слон',                  price: 15  },
+  { icon: '♚', name: 'Король',                price: 20  },
+  { icon: '♜', name: 'Ладья',                 price: 25  },
+  { icon: '❤️', name: 'Сердце',                price: 30  },
+  { icon: '🧸', name: 'Мишка',                 price: 30  },
+  { icon: '♛', name: 'Ферзь',                 price: 45  },
+  { icon: '?',   name: 'Ошибка',               price: 50  },
+  { icon: '🎁', name: 'Подарок',               price: 50  },
+  { icon: '🌹', name: 'Роза',                  price: 50  },
+  { icon: '🎂', name: 'Торт',                  price: 100 },
+  { icon: '💐', name: 'Букет',                 price: 100 },
+  { icon: '🚀', name: 'Ракета',                price: 100 },
+  { icon: '🍾', name: 'Шампанское',            price: 100 },
+  { icon: '!?',  name: 'Неточность',           price: 100 },
+  { icon: '🏆', name: 'Кубок',                 price: 200 },
+  { icon: '💎', name: 'Алмаз',                 price: 200 },
+  { icon: '💍', name: 'Кольцо',                price: 200 },
+  { icon: '➡️', name: 'Вынужденный',           price: 500  },
+  { icon: '🔥', name: 'Факел',                 price: 800 },
+  { icon: '📖', name: 'Теоретический',         price: 1000 },
+  { icon: '📅', name: 'Календарь',             price: 1000 },
+  { icon: '👍', name: 'Хороший',               price: 2000 },
+  { icon: '✔️', name: 'Отличный',              price: 3000 },
+  { icon: '⭐️', name: 'Лучший',                price: 5000 },
+  { icon: '!',  name: 'Замечательный',         price: 10000 },
+  { icon: '!!', name: 'БРИЛЛИАНТ',             price: 25000 },
+  { icon: '🐸', name: 'Пепе',                  price: 1000000 }
 ];
-CASES.forEach(c => { c.weights = computeWeights(c.price); });
 
-const state = {
-  players: {},
-  battles: {}
-};
+// КЕЙСЫ
+const CASES = [
+  { 
+    id: 'free', 
+    name: 'Бесплатный', 
+    icon: '🎁', 
+    price: 0, 
+    desc: '99.9% на Ничего',
+    isFree: true
+  },
+  { 
+    id: 'hody', 
+    name: 'Ходы', 
+    icon: '♟️', 
+    price: 4242, 
+    desc: 'Шанс на БРИЛЛИАНТ',
+    items: ITEMS.filter(i => ['Зевок', 'Упущенная возможность', 'Ошибка', 'Неточность', 'Хороший', 'Отличный', 'Лучший', 'Замечательный', 'БРИЛЛИАНТ'].includes(i.name))
+  },
+  { 
+    id: 'figury', 
+    name: 'Фигуры', 
+    icon: '♞', 
+    price: 20, 
+    desc: 'Шахматные фигуры',
+    items: ITEMS.filter(i => ['Пешка', 'Слон', 'Конь', 'Король', 'Ладья', 'Ферзь'].includes(i.name))
+  },
+  { 
+    id: 'podarki', 
+    name: 'Подарки', 
+    icon: '🎁', 
+    price: 100, 
+    desc: 'Подарки и любовь',
+    items: ITEMS.filter(i => ['Сердце', 'Мишка', 'Подарок', 'Роза', 'Торт', 'Букет', 'Ракета', 'Шампанское', 'Кубок', 'Алмаз', 'Кольцо'].includes(i.name))
+  },
+  { 
+    id: 'nft', 
+    name: 'Нфт', 
+    icon: '🐸', 
+    price: 300000, 
+    desc: 'Шанс на Пепе',
+    items: ITEMS.filter(i => ['Факел', 'Календарь', 'Пепе'].includes(i.name))
+  },
+  { 
+    id: 'telegram', 
+    name: 'Телеграм', 
+    icon: '✈️', 
+    price: 50000, 
+    desc: 'Подарки и Нфт',
+    items: ITEMS.filter(i => ['Сердце', 'Мишка', 'Подарок', 'Роза', 'Торт', 'Букет', 'Ракета', 'Шампанское', 'Кубок', 'Алмаз', 'Кольцо', 'Факел', 'Календарь', 'Пепе'].includes(i.name))
+  },
+  { 
+    id: 'shahmaty', 
+    name: 'Шахматы', 
+    icon: '♟️', 
+    price: 2500, 
+    desc: 'Ходы и Фигуры',
+    items: ITEMS.filter(i => ['Зевок', 'Упущенная возможность', 'Ошибка', 'Неточность', 'Хороший', 'Отличный', 'Лучший', 'Замечательный', 'БРИЛЛИАНТ', 'Пешка', 'Слон', 'Конь', 'Король', 'Ладья', 'Ферзь'].includes(i.name))
+  },
+  { 
+    id: 'all', 
+    name: 'ВСЁ', 
+    icon: '🌌', 
+    price: 33367, 
+    desc: 'Все предметы',
+    items: ITEMS
+  }
+];
+
+const state = { players: {}, battles: {} };
 
 function loadData() {
   try {
@@ -117,26 +141,26 @@ function saveData() {
 
 setInterval(saveData, SAVE_INTERVAL);
 
-function rollRarity(weights) {
-  const total = Object.values(weights).reduce((a, b) => a + b, 0);
-  let r = Math.random() * total;
-  for (const [rar, w] of Object.entries(weights)) {
-    r -= w;
-    if (r <= 0) return rar;
-  }
-  return Object.keys(weights)[0];
-}
-
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function makeItem(rarity) {
-  const base = pick(ITEMS[rarity]);
-  return { ...base, rarity, uid: Date.now() + Math.random() };
+
+function rollCase(caseObj) {
+  if (caseObj.isFree) {
+    if (Math.random() < 0.001) { // 0.1% шанс
+      const item = pick(ITEMS);
+      return { ...item, uid: Date.now() + Math.random() };
+    } else {
+      return { icon: '🕳️', name: 'Ничего', price: 0, uid: Date.now() + Math.random() };
+    }
+  } else {
+    const base = pick(caseObj.items);
+    return { ...base, uid: Date.now() + Math.random() };
+  }
 }
 
 function calcChance(source, target) {
   if (!source || !target) return null;
   const mult = target.price / source.price;
-  let chance = (1 / mult) * HOUSE_EDGE;
+  let chance = (1 / mult);
   if (chance < CHANCE_MIN) return 0;
   return Math.min(CHANCE_MAX, chance);
 }
@@ -145,21 +169,15 @@ function getGoldItem(target) {
   const wanted = target.price * GOLD_MULT;
   let best = null;
   let bestDiff = Infinity;
-  RARITY_ORDER.forEach(rar => {
-    ITEMS[rar].forEach((it, index) => {
-      if (it.price < wanted) return;
-      const diff = it.price - wanted;
-      if (diff < bestDiff) {
-        bestDiff = diff;
-        best = { rarity: rar, index, ...it };
-      }
-    });
+  ITEMS.forEach(it => {
+    if (it.price < wanted) return;
+    const diff = it.price - wanted;
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = it;
+    }
   });
-  if (!best) {
-    const lastRar = RARITY_ORDER[RARITY_ORDER.length - 1];
-    const lastArr = ITEMS[lastRar];
-    best = { rarity: lastRar, index: lastArr.length - 1, ...lastArr[lastArr.length - 1] };
-  }
+  if (!best) best = ITEMS[ITEMS.length - 1];
   return best;
 }
 
@@ -238,7 +256,7 @@ wss.on('connection', (ws) => {
       
       let p = getPlayer(pid);
       if (!p) {
-        p = { nick, balance: START_BALANCE, inventory: [], history: [] };
+        p = { nick, balance: START_BALANCE, inventory: [], history: [], freeLastOpened: 0, freeCountToday: 0 };
         state.players[pid] = p;
       } else p.nick = nick;
       
@@ -255,39 +273,54 @@ wss.on('connection', (ws) => {
     if (!p) return;
 
     if (msg.type === 'get_state') { sendStateTo(ws, c.playerId); return; }
-
-    if (msg.type === 'claim_task') {
-  const taskId = msg.taskId;
-  let itemName, itemPrice, itemRarity = 'kaka';
-  
-  if (taskId === '10m') { itemName = 'Упущенная возможность'; itemPrice = 10; itemRarity = 'kaka'; }
-  else if (taskId === '30m') { itemName = 'Неточность'; itemPrice = 100; itemRarity = 'kaka'; }
-  else if (taskId === '60m') { itemName = 'Вынужденный'; itemPrice = 500; itemRarity = 'norm'; }
-  else if (taskId === 'daily') { itemName = 'Зевок'; itemPrice = 1; itemRarity = 'kaka'; }
-  else return;
-
-  // Защита от накрутки: 1 раз в сутки для всех
-  if (!p.taskClaims) p.taskClaims = {};
-  const now = Date.now();
-  const cooldown = taskId === 'daily' ? 86400000 : 86400000; // раз в сутки для всех
-  
-  if (p.taskClaims[taskId] && now - p.taskClaims[taskId] < cooldown) {
-    return send(ws, { type: 'error', msg: 'Уже получено' });
-  }
-  
-  p.taskClaims[taskId] = now;
-  const newItem = { icon: taskId==='60m'?'➡️':(taskId==='30m'?'!?':(taskId==='daily'?'?':'❌')), name: itemName, price: itemPrice, rarity: itemRarity, uid: now + Math.random() };
-  p.inventory.push(newItem);
-  
-  sendStateTo(ws, c.playerId);
-  send(ws, { type: 'task_reward', item: newItem });
-  saveData();
-  return;
-    }
     if (msg.type === 'earn_money') { p.balance += 0.1; sendStateTo(ws, c.playerId); saveData(); return; }
+
+    // ===== ЗАДАНИЯ =====
+    if (msg.type === 'claim_task') {
+      const taskId = msg.taskId;
+      let itemName, itemPrice, itemIcon;
+      
+      if (taskId === '10m') { itemName = 'Упущенная возможность'; itemPrice = 10; itemIcon = '❌'; }
+      else if (taskId === '30m') { itemName = 'Неточность'; itemPrice = 100; itemIcon = '!?'; }
+      else if (taskId === '60m') { itemName = 'Вынужденный'; itemPrice = 500; itemIcon = '➡️'; }
+      else if (taskId === 'daily') { itemName = 'Зевок'; itemPrice = 1; itemIcon = '??'; }
+      else return;
+
+      if (!p.taskClaims) p.taskClaims = {};
+      const now = Date.now();
+      const cooldown = 86400000;
+      
+      if (p.taskClaims[taskId] && now - p.taskClaims[taskId] < cooldown) {
+        return send(ws, { type: 'error', msg: 'Уже получено' });
+      }
+      
+      p.taskClaims[taskId] = now;
+      const newItem = { icon: itemIcon, name: itemName, price: itemPrice, uid: now + Math.random() };
+      p.inventory.push(newItem);
+      
+      sendStateTo(ws, c.playerId);
+      send(ws, { type: 'task_reward', item: newItem });
+      saveData();
+      return;
+    }
 
     if (msg.type === 'open_case') {
       const caseIds = Array.isArray(msg.caseIds) ? msg.caseIds : [msg.caseId];
+      
+      // Проверка бесплатного кейса
+      const freeCase = caseIds.find(id => id === 'free');
+      if (freeCase) {
+        const today = new Date().toDateString();
+        if (p.freeDate !== today) {
+          p.freeDate = today;
+          p.freeCountToday = 0;
+        }
+        if (p.freeCountToday >= 5) {
+          return send(ws, { type: 'error', msg: 'Лимит бесплатных кейсов: 5 в день' });
+        }
+        p.freeCountToday++;
+      }
+
       const items = [];
       let totalCost = 0;
       
@@ -297,14 +330,13 @@ wss.on('connection', (ws) => {
         if (p.balance < caseObj.price + totalCost) break;
         totalCost += caseObj.price;
       }
-      if (totalCost === 0 || p.balance < totalCost) return send(ws, { type: 'error', msg: 'no money' });
+      if (totalCost > 0 && p.balance < totalCost) return send(ws, { type: 'error', msg: 'no money' });
 
       p.balance -= totalCost;
       for (const cid of caseIds.slice(0, 6)) {
         const caseObj = CASES.find(x => x.id === cid);
         if (!caseObj) continue;
-        const rarity = rollRarity(caseObj.weights);
-        const item = makeItem(rarity);
+        const item = rollCase(caseObj);
         p.inventory.push(item);
         items.push(item);
       }
@@ -389,6 +421,7 @@ wss.on('connection', (ws) => {
       return;
     }
 
+    // БАТЛЫ (без изменений, просто чтобы не падало)
     if (msg.type === 'battle_create') {
       const caseIds = (msg.caseIds || []).filter(id => CASES.some(c => c.id === id)).slice(0, 20);
       if (caseIds.length === 0) return send(ws, { type: 'error', msg: 'no cases' });
@@ -438,7 +471,6 @@ wss.on('connection', (ws) => {
       broadcastBattles();
       saveData();
 
-      // Автоматическое завершение, если кто-то не нажал
       setTimeout(() => {
         const curB = state.battles[b.id];
         if (!curB || curB.status !== 'playing') return;
@@ -450,7 +482,7 @@ wss.on('connection', (ws) => {
             const drops = [];
             for (const caseId of curB.caseIds) {
               const caseObj = CASES.find(x => x.id === caseId);
-              drops.push(makeItem(rollRarity(caseObj.weights)));
+              drops.push(rollCase(caseObj));
             }
             curB.drops[pid] = drops;
             changed = true;
@@ -479,8 +511,7 @@ wss.on('connection', (ws) => {
       const drops = [];
       for (const caseId of b.caseIds) {
         const caseObj = CASES.find(x => x.id === caseId);
-        const rarity = rollRarity(caseObj.weights);
-        drops.push(makeItem(rarity));
+        drops.push(rollCase(caseObj));
       }
       b.drops[c.playerId] = drops;
 
@@ -519,10 +550,7 @@ function finishBattle(b) {
   participants.forEach(pid => {
     for (const [w, info] of clients) {
       if (info.playerId === pid) {
-        send(w, {
-          type: 'battle_finish', battleId: b.id, winnerId,
-          cSum, jSum, creatorId: b.creatorId, joinerId: b.joinerId, drops: b.drops
-        });
+        send(w, { type: 'battle_finish', battleId: b.id, winnerId, cSum, jSum, creatorId: b.creatorId, joinerId: b.joinerId, drops: b.drops });
         sendStateTo(w, pid);
       }
     }
