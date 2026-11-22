@@ -7,96 +7,22 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   :root {
-    --bg: #0a0a12;
-    --bg2: #12121f;
-    --panel: #181828;
-    --border: #2a2a42;
-    --text: #e8e8f0;
-    --dim: #7a7a95;
-    --accent: #00ffc8;
-    --c-kaka: #6b6b6b;
-    --c-norm: #4a9e5c;
-    --c-rare: #3b82f6;
-    --c-epic: #a855f7;
-    --c-legend: #f59e0b;
-    --c-true: #ff2d6f;
-    --item-w: 140px;
+    --bg: #0a0a12; --bg2: #12121f; --panel: #181828; --border: #2a2a42;
+    --text: #e8e8f0; --dim: #7a7a95; --accent: #00ffc8;
+    --c-kaka: #6b6b6b; --c-norm: #4a9e5c; --c-rare: #3b82f6;
+    --c-epic: #a855f7; --c-legend: #f59e0b; --c-true: #ff2d6f; --item-w: 140px;
   }
-  html, body {
-    height: 100%;
-    background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, var(--bg) 60%);
-    color: var(--text);
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  #app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    height: 100dvh;
-    gap: 10px;
-    padding: 10px;
-  }
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-  header h1 {
-    font-size: 18px;
-    letter-spacing: 2px;
-    background: linear-gradient(90deg, var(--c-true), var(--c-legend), var(--accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-transform: uppercase;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
+  html, body { height: 100%; background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, var(--bg) 60%); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
+  #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; gap: 10px; padding: 10px; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; gap: 12px; flex-shrink: 0; }
+  header h1 { font-size: 18px; letter-spacing: 2px; background: linear-gradient(90deg, var(--c-true), var(--c-legend), var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
   header h1:active { transform: scale(0.96); }
   .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .balance {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent);
-    text-shadow: 0 0 12px rgba(0,255,200,0.4);
-    white-space: nowrap;
-  }
+  .balance { font-size: 16px; font-weight: 700; color: var(--accent); text-shadow: 0 0 12px rgba(0,255,200,0.4); white-space: nowrap; }
   .balance span { color: var(--dim); font-size: 11px; font-weight: 400; margin-right: 4px; }
-
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--bg2);
-    padding: 4px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .tab {
-    flex: 1;
-    padding: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    background: transparent;
-    border: none;
-    color: var(--dim);
-    border-radius: 8px;
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: background 0.15s, color 0.15s;
-  }
+  .tabs { display: flex; gap: 4px; background: var(--bg2); padding: 4px; border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; }
+  .tab { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; background: transparent; border: none; color: var(--dim); border-radius: 8px; cursor: pointer; touch-action: manipulation; transition: background 0.15s, color 0.15s; }
   .tab.active { background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px var(--border); }
-
   main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
   .view { display: none; flex: 1; min-height: 0; overflow-y: auto; flex-direction: column; gap: 8px; }
   .view.active { display: flex; }
@@ -104,25 +30,11 @@
   /* Инвентарь */
   .inv-grid { display: flex; flex-direction: column; gap: 8px; }
   .inv-head { display: flex; justify-content: space-between; align-items: center; }
-  .sell-all {
-    font-size: 11px; padding: 6px 10px; background: transparent;
-    border: 1px solid var(--c-norm); color: var(--c-norm);
-    border-radius: 6px; cursor: pointer; touch-action: manipulation;
-  }
+  .sell-all { font-size: 11px; padding: 6px 10px; background: transparent; border: 1px solid var(--c-norm); color: var(--c-norm); border-radius: 6px; cursor: pointer; touch-action: manipulation; }
   .sell-all:active { background: var(--c-norm); color: #fff; }
-  .inv-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px; background: var(--bg2); border-radius: 8px;
-    border-left: 3px solid var(--rar); cursor: pointer;
-    touch-action: manipulation;
-  }
+  .inv-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--bg2); border-radius: 8px; border-left: 3px solid var(--rar); cursor: pointer; touch-action: manipulation; }
   .inv-item:active { background: #252540; }
-  .inv-item.kaka { --rar: var(--c-kaka); }
-  .inv-item.norm { --rar: var(--c-norm); }
-  .inv-item.rare { --rar: var(--c-rare); }
-  .inv-item.epic { --rar: var(--c-epic); }
-  .inv-item.legend { --rar: var(--c-legend); }
-  .inv-item.true { --rar: var(--c-true); }
+  .inv-item.kaka { --rar: var(--c-kaka); } .inv-item.norm { --rar: var(--c-norm); } .inv-item.rare { --rar: var(--c-rare); } .inv-item.epic { --rar: var(--c-epic); } .inv-item.legend { --rar: var(--c-legend); } .inv-item.true { --rar: var(--c-true); }
   .inv-item .inv-icon { font-size: 24px; min-width: 30px; text-align: center; font-weight: 700; }
   .inv-item .inv-info { flex: 1; min-width: 0; }
   .inv-item .inv-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -131,324 +43,125 @@
   .empty { color: var(--dim); font-size: 13px; text-align: center; padding: 40px 10px; line-height: 1.5; }
 
   /* Кейсы */
-  .roulette-wrap {
-    position: relative; height: 150px; background: var(--bg2);
-    border: 1px solid var(--border); border-radius: 12px;
-    overflow: hidden; flex-shrink: 0;
-  }
-  .roulette-wrap::before, .roulette-wrap::after {
-    content: ''; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 5; pointer-events: none;
-  }
+  .roulette-wrap { position: relative; height: 150px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; flex-shrink: 0; }
+  .roulette-wrap::before, .roulette-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 5; pointer-events: none; }
   .roulette-wrap::before { left: 0; background: linear-gradient(90deg, var(--bg2), transparent); }
   .roulette-wrap::after { right: 0; background: linear-gradient(-90deg, var(--bg2), transparent); }
-  .marker {
-    position: absolute; left: 50%; top: 0; bottom: 0; width: 3px;
-    background: var(--accent); transform: translateX(-50%); z-index: 10;
-    box-shadow: 0 0 20px var(--accent);
-  }
+  .marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: var(--accent); transform: translateX(-50%); z-index: 10; box-shadow: 0 0 20px var(--accent); }
   .track { display: flex; height: 100%; align-items: center; will-change: transform; }
-  .item {
-    flex-shrink: 0; width: var(--item-w); height: 120px; margin: 0 6px;
-    border-radius: 10px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 6px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.3));
-    border: 2px solid var(--border); position: relative; overflow: hidden;
-  }
+  .item { flex-shrink: 0; width: var(--item-w); height: 120px; margin: 0 6px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.3)); border: 2px solid var(--border); position: relative; overflow: hidden; }
   .item .icon { font-size: 40px; font-weight: 700; line-height: 1; }
   .item .name { font-size: 10px; font-weight: 600; text-align: center; padding: 0 4px; line-height: 1.15; color: var(--dim); }
   .item::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--rar); }
-  .item.kaka { --rar: var(--c-kaka); }
-  .item.norm { --rar: var(--c-norm); }
-  .item.rare { --rar: var(--c-rare); }
-  .item.epic { --rar: var(--c-epic); }
-  .item.legend { --rar: var(--c-legend); }
-  .item.true { --rar: var(--c-true); }
-
-  .cases {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px; align-content: start;
-  }
-  .case {
-    background: var(--panel); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px 10px;
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    position: relative;
-  }
+  .item.kaka { --rar: var(--c-kaka); } .item.norm { --rar: var(--c-norm); } .item.rare { --rar: var(--c-rare); } .item.epic { --rar: var(--c-epic); } .item.legend { --rar: var(--c-legend); } .item.true { --rar: var(--c-true); }
+  .cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-content: start; }
+  .case { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; }
   .case:active:not(.disabled) { transform: scale(0.98); border-color: var(--accent); }
   .case.disabled .case-open { opacity: 0.4; pointer-events: none; }
   .case-open { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; width: 100%; touch-action: manipulation; }
   .case .case-icon { font-size: 42px; }
   .case .case-name { font-size: 13px; font-weight: 600; text-align: center; }
   .case .case-price { font-size: 15px; font-weight: 700; color: var(--accent); }
-  .case-info-btn {
-    position: absolute; top: 6px; right: 6px;
-    width: 26px; height: 26px; border-radius: 50%;
-    background: var(--bg2); border: 1px solid var(--border); color: var(--dim);
-    font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 2; touch-action: manipulation;
-  }
+  .case-info-btn { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); color: var(--dim); font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; touch-action: manipulation; }
   .case-info-btn::after { content: 'i'; font-style: italic; }
 
   /* Апгрейдер */
   .upgrader { display: flex; flex-direction: column; gap: 12px; }
-  .upg-top {
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px;
-    padding: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-  }
-  .upg-slot {
-    aspect-ratio: 1; max-width: 150px; width: 100%; margin: 0 auto;
-    border-radius: 12px; background: var(--bg2);
-    border: 2px dashed var(--border);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; position: relative; cursor: pointer; overflow: hidden; touch-action: manipulation;
-  }
-  .upg-slot.filled {
-    border-style: solid; border-color: var(--rar);
-    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.3));
-    box-shadow: inset 0 -30px 50px -30px var(--rar);
-  }
-  .upg-slot.filled.kaka { --rar: var(--c-kaka); }
-  .upg-slot.filled.norm { --rar: var(--c-norm); }
-  .upg-slot.filled.rare { --rar: var(--c-rare); }
-  .upg-slot.filled.epic { --rar: var(--c-epic); }
-  .upg-slot.filled.legend { --rar: var(--c-legend); }
-  .upg-slot.filled.true { --rar: var(--c-true); }
+  .upg-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; padding: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+  .upg-slot { aspect-ratio: 1; max-width: 150px; width: 100%; margin: 0 auto; border-radius: 12px; background: var(--bg2); border: 2px dashed var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: relative; cursor: pointer; overflow: hidden; touch-action: manipulation; }
+  .upg-slot.filled { border-style: solid; border-color: var(--rar); background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.3)); box-shadow: inset 0 -30px 50px -30px var(--rar); }
+  .upg-slot.filled.kaka { --rar: var(--c-kaka); } .upg-slot.filled.norm { --rar: var(--c-norm); } .upg-slot.filled.rare { --rar: var(--c-rare); } .upg-slot.filled.epic { --rar: var(--c-epic); } .upg-slot.filled.legend { --rar: var(--c-legend); } .upg-slot.filled.true { --rar: var(--c-true); }
   .upg-slot .slot-icon { font-size: 40px; font-weight: 700; line-height: 1; }
   .upg-slot .slot-name { font-size: 10px; text-align: center; color: var(--dim); padding: 0 4px; line-height: 1.1; }
   .upg-slot .slot-price { font-size: 11px; font-weight: 700; color: var(--accent); }
   .upg-slot .slot-empty { font-size: 36px; color: var(--border); }
   .upg-slot .slot-hint { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
-
   .wheel-wrap { position: relative; width: 150px; height: 150px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .wheel-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-  .wheel-svg .seg-lose { fill: #ff2d6f; }
-  .wheel-svg .seg-win { fill: #22c55e; }
-  .wheel-svg .seg-gold { fill: #fbbf24; }
-  .wheel-center {
-    position: absolute; inset: 22%; background: var(--panel);
-    border: 2px solid var(--border); border-radius: 50%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 1px; z-index: 2;
-  }
+  .wheel-svg .seg-lose { fill: #ff2d6f; } .wheel-svg .seg-win { fill: #22c55e; } .wheel-svg .seg-gold { fill: #fbbf24; }
+  .wheel-center { position: absolute; inset: 22%; background: var(--panel); border: 2px solid var(--border); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; z-index: 2; }
   .wheel-center .wc-chance { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
   .wheel-center .wc-mult { font-size: 9px; color: var(--dim); font-weight: 600; }
-  .wheel-pointer {
-    position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
-    width: 0; height: 0; border-left: 9px solid transparent;
-    border-right: 9px solid transparent; border-top: 16px solid var(--text);
-    z-index: 3;
-  }
+  .wheel-pointer { position: absolute; top: -4px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 16px solid var(--text); z-index: 3; }
   .upg-actions { display: flex; gap: 8px; }
-  .upg-btn {
-    flex: 1; padding: 14px; font-size: 14px; font-weight: 700;
-    border: none; border-radius: 10px; cursor: pointer; touch-action: manipulation;
-  }
+  .upg-btn { flex: 1; padding: 14px; font-size: 14px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; touch-action: manipulation; }
   .upg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .upg-btn.go { background: linear-gradient(90deg, var(--accent), #00b894); color: #000; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; }
   .upg-btn.clear { background: transparent; color: var(--dim); border: 1px solid var(--border); flex: 0 0 auto; padding: 14px 20px; }
 
   /* Батлы */
   .battles-wrap { display: flex; flex-direction: column; gap: 10px; }
-  .battle-create-btn {
-    padding: 14px; border-radius: 12px; border: none;
-    background: linear-gradient(90deg, var(--accent), #00b894);
-    color: #000; font-weight: 800; font-size: 15px;
-    letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
-    touch-action: manipulation;
-  }
-  .battle-create-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .battle-item {
-    background: var(--panel); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px; display: flex;
-    flex-direction: column; gap: 8px;
-  }
+  .battle-create-btn { padding: 14px; border-radius: 12px; border: none; background: linear-gradient(90deg, var(--accent), #00b894); color: #000; font-weight: 800; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; touch-action: manipulation; }
+  .battle-item { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
   .battle-item .bi-top { display: flex; justify-content: space-between; align-items: center; }
   .battle-item .bi-nick { font-weight: 700; font-size: 14px; }
   .battle-item .bi-price { font-weight: 700; color: var(--accent); font-size: 14px; }
   .battle-item .bi-cases { display: flex; flex-wrap: wrap; gap: 4px; }
-  .battle-item .bi-case {
-    font-size: 11px; padding: 3px 7px; border-radius: 6px;
-    background: var(--bg2); border: 1px solid var(--border); color: var(--dim);
-  }
+  .battle-item .bi-case { font-size: 11px; padding: 3px 7px; border-radius: 6px; background: var(--bg2); border: 1px solid var(--border); color: var(--dim); }
   .battle-item .bi-actions { display: flex; gap: 6px; }
-  .battle-item .bi-actions button {
-    flex: 1; padding: 8px; border-radius: 8px; border: none;
-    font-size: 12px; font-weight: 700; cursor: pointer; touch-action: manipulation;
-  }
+  .battle-item .bi-actions button { flex: 1; padding: 8px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
   .bi-join { background: var(--accent); color: #000; }
   .bi-cancel { background: transparent; border: 1px solid var(--c-true); color: var(--c-true); }
 
-  /* АРЕНА БАТЛА */
-  .battle-arena {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-    display: none; flex-direction: column; z-index: 200;
-    padding: 12px; gap: 10px; backdrop-filter: blur(8px);
-  }
+  /* АРЕНА */
+  .battle-arena { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; z-index: 200; padding: 12px; gap: 10px; backdrop-filter: blur(8px); }
   .battle-arena.show { display: flex; }
-  
-  .arena-countdown {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.8); z-index: 300; font-size: 120px; font-weight: 900;
-    color: var(--accent); text-shadow: 0 0 40px var(--accent);
-    animation: popIn 0.5s ease-out;
-  }
-  
-  .arena-head {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    flex-shrink: 0;
-  }
-  .arena-head h2 { font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
-  
-  .arena-players {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; min-height: 0;
-  }
-  .arena-side {
-    background: var(--panel); border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px; display: flex;
-    flex-direction: column; gap: 8px; min-height: 0; overflow: hidden;
-  }
-  .arena-side .as-name {
-    font-weight: 700; font-size: 14px; text-align: center;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    flex-shrink: 0;
-  }
+  .arena-countdown { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 300; font-size: 120px; font-weight: 900; color: var(--accent); text-shadow: 0 0 40px var(--accent); }
+  .arena-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; flex-shrink: 0; }
+  .arena-players { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; min-height: 0; }
+  .arena-side { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow: hidden; }
+  .arena-side .as-name { font-weight: 700; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
   .arena-side .as-sum { text-align: center; color: var(--accent); font-weight: 700; font-size: 14px; flex-shrink: 0; }
-  
-  /* Вертикальная рулетка */
-  .arena-vert-wrap {
-    flex: 1; position: relative; background: var(--bg2);
-    border: 1px solid var(--border); border-radius: 8px;
-    overflow: hidden; min-height: 0;
-  }
-  .arena-vert-wrap::before, .arena-vert-wrap::after {
-    content: ''; position: absolute; left: 0; right: 0; height: 40px; z-index: 5; pointer-events: none;
-  }
+  .arena-vert-wrap { flex: 1; position: relative; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-height: 0; }
+  .arena-vert-wrap::before, .arena-vert-wrap::after { content: ''; position: absolute; left: 0; right: 0; height: 40px; z-index: 5; pointer-events: none; }
   .arena-vert-wrap::before { top: 0; background: linear-gradient(180deg, var(--bg2), transparent); }
   .arena-vert-wrap::after { bottom: 0; background: linear-gradient(0deg, var(--bg2), transparent); }
-  
-  .arena-vert-marker {
-    position: absolute; top: 50%; left: 0; right: 0; height: 3px;
-    background: var(--accent); transform: translateY(-50%); z-index: 10;
-    box-shadow: 0 0 15px var(--accent);
-  }
-  
-  .arena-vert-track {
-    display: flex; flex-direction: column; width: 100%;
-    position: absolute; top: 0; left: 0; will-change: transform;
-  }
-  .arena-v-item {
-    flex-shrink: 0; width: 100%; height: 60px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg2); position: relative;
-    font-size: 12px; font-weight: 700;
-  }
+  .arena-vert-marker { position: absolute; top: 50%; left: 0; right: 0; height: 3px; background: var(--accent); transform: translateY(-50%); z-index: 10; box-shadow: 0 0 15px var(--accent); }
+  .arena-vert-track { display: flex; flex-direction: column; width: 100%; position: absolute; top: 0; left: 0; will-change: transform; }
+  .arena-v-item { flex-shrink: 0; width: 100%; height: 60px; display: flex; align-items: center; justify-content: center; gap: 8px; border-bottom: 1px solid var(--border); background: var(--bg2); position: relative; font-size: 12px; font-weight: 700; }
   .arena-v-item .avi-icon { font-size: 20px; }
   .arena-v-item .avi-name { flex: 1; text-align: center; }
   .arena-v-item .avi-price { color: var(--accent); }
-  .arena-v-item.kaka { border-left: 3px solid var(--c-kaka); }
-  .arena-v-item.norm { border-left: 3px solid var(--c-norm); }
-  .arena-v-item.rare { border-left: 3px solid var(--c-rare); }
-  .arena-v-item.epic { border-left: 3px solid var(--c-epic); }
-  .arena-v-item.legend { border-left: 3px solid var(--c-legend); }
-  .arena-v-item.true { border-left: 3px solid var(--c-true); }
+  .arena-v-item.kaka { border-left: 3px solid var(--c-kaka); } .arena-v-item.norm { border-left: 3px solid var(--c-norm); } .arena-v-item.rare { border-left: 3px solid var(--c-rare); } .arena-v-item.epic { border-left: 3px solid var(--c-epic); } .arena-v-item.legend { border-left: 3px solid var(--c-legend); } .arena-v-item.true { border-left: 3px solid var(--c-true); }
 
-  /* Модалки */
-  .overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-    display: none; align-items: center; justify-content: center;
-    z-index: 100; backdrop-filter: blur(4px); padding: 20px;
-  }
+  /* Модалки и Профиль */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); padding: 20px; }
   .overlay.show { display: flex; }
-  .win-card {
-    background: var(--panel); border: 2px solid var(--rar, var(--accent));
-    border-radius: 16px; padding: 26px 30px; text-align: center;
-    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 0 60px -10px var(--rar, var(--accent));
-    max-width: 340px; width: 100%;
-  }
+  .win-card { background: var(--panel); border: 2px solid var(--rar, var(--accent)); border-radius: 16px; padding: 26px 30px; text-align: center; box-shadow: 0 0 60px -10px var(--rar, var(--accent)); max-width: 340px; width: 100%; }
   .win-card .win-icon { font-size: 64px; margin-bottom: 8px; font-weight: 700; }
   .win-card .win-rar { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--rar, var(--accent)); margin-bottom: 6px; }
   .win-card .win-name { font-size: 22px; font-weight: 800; margin-bottom: 16px; word-break: break-word; }
   .win-card .win-price { font-size: 15px; color: var(--accent); font-weight: 700; margin-bottom: 20px; }
-  .win-card button {
-    padding: 12px 40px; font-size: 15px; font-weight: 700;
-    background: var(--accent); color: #000; border: none;
-    border-radius: 8px; cursor: pointer; width: 100%; touch-action: manipulation;
-  }
-  .info-card {
-    background: var(--panel); border: 2px solid var(--border);
-    border-radius: 16px; padding: 20px; max-width: 460px; width: 100%;
-    max-height: 85vh; display: flex; flex-direction: column;
-    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+  .win-card button { padding: 12px 40px; font-size: 15px; font-weight: 700; background: var(--accent); color: #000; border: none; border-radius: 8px; cursor: pointer; width: 100%; touch-action: manipulation; }
+  .info-card { background: var(--panel); border: 2px solid var(--border); border-radius: 16px; padding: 20px; max-width: 460px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; }
   .info-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
   .info-title { font-size: 18px; font-weight: 800; }
   .info-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
-  .info-close {
-    background: var(--bg2); border: 1px solid var(--border); color: var(--dim);
-    width: 32px; height: 32px; border-radius: 8px; font-size: 18px;
-    cursor: pointer; flex-shrink: 0; touch-action: manipulation;
-  }
+  .info-close { background: var(--bg2); border: 1px solid var(--border); color: var(--dim); width: 32px; height: 32px; border-radius: 8px; font-size: 18px; cursor: pointer; flex-shrink: 0; touch-action: manipulation; }
   .info-list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-  .info-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 10px; background: var(--bg2); border-radius: 8px;
-    border-left: 3px solid var(--rar);
-  }
-  .info-row.kaka { --rar: var(--c-kaka); }
-  .info-row.norm { --rar: var(--c-norm); }
-  .info-row.rare { --rar: var(--c-rare); }
-  .info-row.epic { --rar: var(--c-epic); }
-  .info-row.legend { --rar: var(--c-legend); }
-  .info-row.true { --rar: var(--c-true); }
+  .info-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg2); border-radius: 8px; border-left: 3px solid var(--rar); }
+  .info-row.kaka { --rar: var(--c-kaka); } .info-row.norm { --rar: var(--c-norm); } .info-row.rare { --rar: var(--c-rare); } .info-row.epic { --rar: var(--c-epic); } .info-row.legend { --rar: var(--c-legend); } .info-row.true { --rar: var(--c-true); }
   .info-row .ir-icon { font-size: 22px; min-width: 28px; text-align: center; }
   .info-row .ir-name { flex: 1; font-size: 13px; font-weight: 600; }
   .info-row .ir-price { font-size: 12px; color: var(--accent); font-weight: 700; }
-  .info-row .ir-chance { font-size: 12px; font-weight: 700; color: var(--dim); min-width: 58px; text-align: right; }
-
   .picker-list { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; }
   .picker-section { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; color: var(--dim); padding: 8px 2px 2px; }
-
-  /* ПРОФИЛЬ */
-  .profile-card {
-    background: var(--panel); border: 2px solid var(--accent);
-    border-radius: 16px; padding: 26px 24px; max-width: 340px; width: 100%;
-    display: flex; flex-direction: column; gap: 12px; text-align: center;
-    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 0 60px -10px var(--accent);
-  }
+  .profile-card { background: var(--panel); border: 2px solid var(--accent); border-radius: 16px; padding: 26px 24px; max-width: 340px; width: 100%; display: flex; flex-direction: column; gap: 12px; text-align: center; box-shadow: 0 0 60px -10px var(--accent); }
   .profile-nick { font-size: 22px; font-weight: 800; word-break: break-word; }
   .profile-balance { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
-  .profile-btn {
-    padding: 12px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--bg2); color: var(--text); font-weight: 700;
-    font-size: 14px; cursor: pointer; touch-action: manipulation;
-    transition: all 0.15s;
-  }
+  .profile-btn { padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-weight: 700; font-size: 14px; cursor: pointer; touch-action: manipulation; transition: all 0.15s; }
   .profile-btn:active { background: var(--border); }
-  .profile-btn.accent {
-    background: linear-gradient(90deg, var(--accent), #00b894);
-    color: #000; border: none;
-  }
+  .profile-btn.accent { background: linear-gradient(90deg, var(--accent), #00b894); color: #000; border: none; }
   .profile-btn.big { padding: 18px; font-size: 16px; }
-
   @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
   @media (max-width: 768px) {
     :root { --item-w: 110px; }
-    header { padding: 8px 14px; }
-    header h1 { font-size: 14px; }
-    .roulette-wrap { height: 120px; }
-    .item { height: 100px; }
-    .item .icon { font-size: 32px; }
-    .cases { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .case .case-icon { font-size: 32px; }
-    .wheel-wrap { width: 110px; height: 110px; }
-    .upg-slot { max-width: 110px; }
+    header { padding: 8px 14px; } header h1 { font-size: 14px; }
+    .roulette-wrap { height: 120px; } .item { height: 100px; } .item .icon { font-size: 32px; }
+    .cases { grid-template-columns: repeat(2, 1fr); gap: 8px; } .case .case-icon { font-size: 32px; }
+    .wheel-wrap { width: 110px; height: 110px; } .upg-slot { max-width: 110px; }
     .arena-countdown { font-size: 80px; }
   }
 </style>
@@ -461,34 +174,21 @@
       <div class="balance"><span>Баланс</span><b id="balance">0</b> ₽</div>
     </div>
   </header>
-
   <div class="tabs">
     <button class="tab active" data-tab="inv">Инвентарь</button>
     <button class="tab" data-tab="cases">Кейсы</button>
     <button class="tab" data-tab="upg">Апгрейдер</button>
     <button class="tab" data-tab="battles">Батлы</button>
   </div>
-
   <main>
-    <!-- ИНВЕНТАРЬ -->
     <div class="view active" id="viewInv">
-      <div class="inv-head">
-        <div style="font-size:12px;color:var(--dim);" id="invCount">0 предметов</div>
-        <button class="sell-all" id="sellAll">Продать всё</button>
-      </div>
+      <div class="inv-head"><div style="font-size:12px;color:var(--dim);" id="invCount">0 предметов</div><button class="sell-all" id="sellAll">Продать всё</button></div>
       <div class="inv-grid" id="inventory"></div>
     </div>
-
-    <!-- КЕЙСЫ -->
     <div class="view" id="viewCases">
-      <div class="roulette-wrap">
-        <div class="marker"></div>
-        <div class="track" id="track"></div>
-      </div>
+      <div class="roulette-wrap"><div class="marker"></div><div class="track" id="track"></div></div>
       <div class="cases" id="cases"></div>
     </div>
-
-    <!-- АПГРЕЙДЕР -->
     <div class="view" id="viewUpg">
       <div class="upgrader">
         <div class="upg-top">
@@ -496,21 +196,13 @@
           <div class="wheel-wrap">
             <div class="wheel-pointer"></div>
             <svg class="wheel-svg" id="wheelSvg" viewBox="0 0 100 100"></svg>
-            <div class="wheel-center">
-              <div class="wc-chance" id="upgChanceValue">—</div>
-              <div class="wc-mult" id="upgMult">x0</div>
-            </div>
+            <div class="wheel-center"><div class="wc-chance" id="upgChanceValue">—</div><div class="wc-mult" id="upgMult">x0</div></div>
           </div>
           <div class="upg-slot" id="upgTargetSlot"></div>
         </div>
-        <div class="upg-actions">
-          <button class="upg-btn go" id="upgGo" disabled>Апгрейд</button>
-          <button class="upg-btn clear" id="upgClear">Сброс</button>
-        </div>
+        <div class="upg-actions"><button class="upg-btn go" id="upgGo" disabled>Апгрейд</button><button class="upg-btn clear" id="upgClear">Сброс</button></div>
       </div>
     </div>
-
-    <!-- БАТЛЫ -->
     <div class="view" id="viewBattles">
       <div class="battles-wrap">
         <button class="battle-create-btn" id="battleCreateBtn">Создать батл</button>
@@ -521,930 +213,307 @@
   </main>
 </div>
 
-<!-- Модалка выигрыша -->
-<div class="overlay" id="overlay">
-  <div class="win-card" id="winCard">
-    <div class="win-icon" id="winIcon"></div>
-    <div class="win-rar" id="winRar"></div>
-    <div class="win-name" id="winName"></div>
-    <div class="win-price" id="winPrice"></div>
-    <button id="winClose">Забрать</button>
-  </div>
-</div>
+<div class="overlay" id="overlay"><div class="win-card" id="winCard"><div class="win-icon" id="winIcon"></div><div class="win-rar" id="winRar"></div><div class="win-name" id="winName"></div><div class="win-price" id="winPrice"></div><button id="winClose">Забрать</button></div></div>
+<div class="overlay" id="infoOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title" id="infoTitle"></div><div class="info-sub" id="infoSub"></div></div><button class="info-close" id="infoClose">✕</button></div><div class="info-list" id="infoList"></div></div></div>
+<div class="overlay" id="pickerOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title">Выбери ставку</div><div class="info-sub">Предмет из инвентаря</div></div><button class="info-close" id="pickerClose">✕</button></div><div class="picker-list" id="pickerList"></div></div></div>
+<div class="overlay" id="targetPickerOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title">Выбери цель</div><div class="info-sub" id="targetPickerSub"></div></div><button class="info-close" id="targetPickerClose">✕</button></div><div class="picker-list" id="targetPickerList"></div></div></div>
+<div class="overlay" id="battleCreateOverlay"><div class="info-card"><div class="info-head"><div><div class="info-title">Создать батл</div><div class="info-sub" id="battleCreateSub">Выбери кейсы (до 20)</div></div><button class="info-close" id="battleCreateClose">✕</button></div><div class="picker-list" id="battleCasePicker"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px;"><div style="font-size:13px;color:var(--dim);">Итого: <b id="battleTotal" style="color:var(--accent);">0 ₽</b></div><button id="battleCreateConfirm" style="padding:10px 20px;border-radius:8px;border:none;background:var(--accent);color:#000;font-weight:700;cursor:pointer;">Создать</button></div></div></div>
 
-<!-- Инфо кейса -->
-<div class="overlay" id="infoOverlay">
-  <div class="info-card">
-    <div class="info-head">
-      <div>
-        <div class="info-title" id="infoTitle"></div>
-        <div class="info-sub" id="infoSub"></div>
-      </div>
-      <button class="info-close" id="infoClose">✕</button>
-    </div>
-    <div class="info-list" id="infoList"></div>
-  </div>
-</div>
-
-<!-- Picker источника апгрейда -->
-<div class="overlay" id="pickerOverlay">
-  <div class="info-card">
-    <div class="info-head">
-      <div>
-        <div class="info-title">Выбери ставку</div>
-        <div class="info-sub">Предмет из инвентаря</div>
-      </div>
-      <button class="info-close" id="pickerClose">✕</button>
-    </div>
-    <div class="picker-list" id="pickerList"></div>
-  </div>
-</div>
-
-<!-- Picker цели апгрейда -->
-<div class="overlay" id="targetPickerOverlay">
-  <div class="info-card">
-    <div class="info-head">
-      <div>
-        <div class="info-title">Выбери цель</div>
-        <div class="info-sub" id="targetPickerSub"></div>
-      </div>
-      <button class="info-close" id="targetPickerClose">✕</button>
-    </div>
-    <div class="picker-list" id="targetPickerList"></div>
-  </div>
-</div>
-
-<!-- Создание батла -->
-<div class="overlay" id="battleCreateOverlay">
-  <div class="info-card">
-    <div class="info-head">
-      <div>
-        <div class="info-title">Создать батл</div>
-        <div class="info-sub" id="battleCreateSub">Выбери кейсы (до 20)</div>
-      </div>
-      <button class="info-close" id="battleCreateClose">✕</button>
-    </div>
-    <div class="picker-list" id="battleCasePicker"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px;">
-      <div style="font-size:13px;color:var(--dim);">Итого: <b id="battleTotal" style="color:var(--accent);">0 ₽</b></div>
-      <button id="battleCreateConfirm" style="padding:10px 20px;border-radius:8px;border:none;background:var(--accent);color:#000;font-weight:700;cursor:pointer;">Создать</button>
-    </div>
-  </div>
-</div>
-
-<!-- АРЕНА БАТЛА -->
 <div class="battle-arena" id="battleArena">
   <div class="arena-countdown" id="arenaCountdown" style="display:none;">5</div>
-  
-  <div class="arena-head">
-    <h2>Батл</h2>
-    <div style="font-size:12px;color:var(--dim);" id="arenaStatus">Ожидание...</div>
-  </div>
+  <div class="arena-head"><h2>Батл</h2><div style="font-size:12px;color:var(--dim);" id="arenaStatus">Ожидание...</div></div>
   <div class="arena-players">
     <div class="arena-side">
-      <div class="as-name" id="arenaLeftName">—</div>
-      <div class="as-sum" id="arenaLeftSum">0 ₽</div>
-      <div class="arena-vert-wrap">
-        <div class="arena-vert-marker"></div>
-        <div class="arena-vert-track" id="arenaLeftTrack"></div>
-      </div>
+      <div class="as-name" id="arenaLeftName">—</div><div class="as-sum" id="arenaLeftSum">0 ₽</div>
+      <div class="arena-vert-wrap"><div class="arena-vert-marker"></div><div class="arena-vert-track" id="arenaLeftTrack"></div></div>
     </div>
     <div class="arena-side">
-      <div class="as-name" id="arenaRightName">—</div>
-      <div class="as-sum" id="arenaRightSum">0 ₽</div>
-      <div class="arena-vert-wrap">
-        <div class="arena-vert-marker"></div>
-        <div class="arena-vert-track" id="arenaRightTrack"></div>
-      </div>
+      <div class="as-name" id="arenaRightName">—</div><div class="as-sum" id="arenaRightSum">0 ₽</div>
+      <div class="arena-vert-wrap"><div class="arena-vert-marker"></div><div class="arena-vert-track" id="arenaRightTrack"></div></div>
     </div>
   </div>
 </div>
 
-<!-- Модалка результата батла -->
-<div class="overlay" id="battleResultOverlay">
-  <div class="win-card" id="battleResultCard">
-    <div class="win-icon" id="battleResultIcon"></div>
-    <div class="win-rar" id="battleResultRar"></div>
-    <div class="win-name" id="battleResultName"></div>
-    <div class="win-price" id="battleResultPrice"></div>
-    <button id="battleResultClose">Закрыть</button>
-  </div>
-</div>
-
-<!-- Модалка ПРОФИЛЯ -->
-<div class="overlay" id="profileOverlay">
-  <div class="profile-card">
-    <div class="profile-nick" id="profileNick">Ник</div>
-    <div class="profile-balance" id="profileBalance">0 ₽</div>
-    
-    <button class="profile-btn" id="exportBtn">Экспорт</button>
-    <button class="profile-btn" id="importBtn">Импорт</button>
-    
-    <div style="border-top: 1px solid var(--border); margin: 6px 0;"></div>
-    
-    <button class="profile-btn accent big" id="earnBtn">Заработок +0.1 ₽</button>
-    
-    <button class="profile-btn" id="profileClose" style="margin-top: 10px; border-color: transparent; color: var(--dim);">Закрыть</button>
-  </div>
-</div>
+<div class="overlay" id="battleResultOverlay"><div class="win-card" id="battleResultCard"><div class="win-icon" id="battleResultIcon"></div><div class="win-rar" id="battleResultRar"></div><div class="win-name" id="battleResultName"></div><div class="win-price" id="battleResultPrice"></div><button id="battleResultClose">Закрыть</button></div></div>
+<div class="overlay" id="profileOverlay"><div class="profile-card"><div class="profile-nick" id="profileNick">Ник</div><div class="profile-balance" id="profileBalance">0 ₽</div><button class="profile-btn" id="exportBtn">Экспорт</button><button class="profile-btn" id="importBtn">Импорт</button><div style="border-top: 1px solid var(--border); margin: 6px 0;"></div><button class="profile-btn accent big" id="earnBtn">Заработок +0.1 ₽</button><button class="profile-btn" id="profileClose" style="margin-top: 10px; border-color: transparent; color: var(--dim);">Закрыть</button></div></div>
 
 <script>
 (() => {
   'use strict';
-
-  const RARITIES = {
-    kaka:   { name: 'Кака',         color: '#6b6b6b' },
-    norm:   { name: 'Норм',         color: '#4a9e5c' },
-    rare:   { name: 'Редкий',       color: '#3b82f6' },
-    epic:   { name: 'Эпический',    color: '#a855f7' },
-    legend: { name: 'Легендарный',  color: '#f59e0b' },
-    true:   { name: 'true Zaharka', color: '#ff2d6f' }
-  };
+  const RARITIES = { kaka: { name: 'Кака', color: '#6b6b6b' }, norm: { name: 'Норм', color: '#4a9e5c' }, rare: { name: 'Редкий', color: '#3b82f6' }, epic: { name: 'Эпический', color: '#a855f7' }, legend: { name: 'Легендарный', color: '#f59e0b' }, true: { name: 'true Zaharka', color: '#ff2d6f' } };
   const RARITY_ORDER = ['kaka', 'norm', 'rare', 'epic', 'legend', 'true'];
-  const ITEMS = {
-    kaka: [
-      { icon: '??',  name: 'Зевок',                price: 1   },
-      { icon: '❌',  name: 'Упущенная возможность', price: 10  },
-      { icon: '?',   name: 'Ошибка',               price: 50  },
-      { icon: '!?',  name: 'Неточность',           price: 100 }
-    ],
-    norm: [
-      { icon: '➡️', name: 'Вынужденный',           price: 500  },
-      { icon: '📖', name: 'Теоретический',         price: 1000 }
-    ],
-    rare: [
-      { icon: '👍', name: 'Хороший',               price: 2000 },
-      { icon: '✔️', name: 'Отличный',              price: 3000 }
-    ],
-    epic: [
-      { icon: '⭐️', name: 'Лучший',                price: 5000 }
-    ],
-    legend: [
-      { icon: '!',  name: 'Замечательный',         price: 10000 }
-    ],
-    true: [
-      { icon: '!!', name: 'БРИЛЛИАНТ',             price: 25000 }
-    ]
-  };
-
+  const ITEMS = { kaka: [{ icon: '??', name: 'Зевок', price: 1 }, { icon: '❌', name: 'Упущенная возможность', price: 10 }, { icon: '?', name: 'Ошибка', price: 50 }, { icon: '!?', name: 'Неточность', price: 100 }], norm: [{ icon: '➡️', name: 'Вынужденный', price: 500 }, { icon: '📖', name: 'Теоретический', price: 1000 }], rare: [{ icon: '👍', name: 'Хороший', price: 2000 }, { icon: '✔️', name: 'Отличный', price: 3000 }], epic: [{ icon: '⭐️', name: 'Лучший', price: 5000 }], legend: [{ icon: '!', name: 'Замечательный', price: 10000 }], true: [{ icon: '!!', name: 'БРИЛЛИАНТ', price: 25000 }] };
   const $ = id => document.getElementById(id);
   const rand = (a, b) => a + Math.random() * (b - a);
   const fmt = n => n.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
-  const fmtChance = (c) => {
-    if (c == null) return '—';
-    const pct = c * 100;
-    if (pct === 0) return '0.00%';
-    if (pct < 1) return pct.toFixed(2) + '%';
-    return pct.toFixed(1) + '%';
-  };
-  const chanceColor = (chance) => {
-    if (chance == null) return '#7a7a95';
-    if (chance === 0) return '#3a3a50';
-    const p = Math.max(0, Math.min(1, chance));
-    return `hsl(${p * 130}, 85%, 55%)`;
-  };
+  const fmtChance = (c) => { if (c == null) return '—'; const pct = c * 100; if (pct === 0) return '0.00%'; if (pct < 1) return pct.toFixed(2) + '%'; return pct.toFixed(1) + '%'; };
+  const chanceColor = (chance) => { if (chance == null) return '#7a7a95'; if (chance === 0) return '#3a3a50'; const p = Math.max(0, Math.min(1, chance)); return `hsl(${p * 130}, 85%, 55%)`; };
 
-  const state = {
-    playerId: localStorage.getItem('zd_pid'),
-    nick: localStorage.getItem('zd_nick'),
-    balance: 0,
-    inventory: [],
-    history: [],
-    cases: [],
-    battles: [],
-    rolling: false,
-    upgSource: null,
-    upgTarget: null,
-    upgRolling: false,
-    goldActive: false,
-    currentBattle: null,
-    pendingCaseDrop: null,
-    pendingUpgDrop: null
-  };
-
+  const state = { playerId: localStorage.getItem('zd_pid'), nick: localStorage.getItem('zd_nick'), balance: 0, inventory: [], history: [], cases: [], battles: [], rolling: false, upgSource: null, upgTarget: null, upgRolling: false, goldActive: false, pendingCaseDrop: null, pendingUpgDrop: null };
   let ws = null;
   let reconnectTimer = null;
 
   function connect() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(proto + '//' + location.host);
-
     ws.onopen = () => {
       if (!state.playerId) state.playerId = crypto.randomUUID();
       localStorage.setItem('zd_pid', state.playerId);
-      if (!state.nick) {
-        state.nick = prompt('Введи ник:') || 'Игрок' + Math.floor(Math.random() * 9999);
-        localStorage.setItem('zd_nick', state.nick);
-      }
+      if (!state.nick) { state.nick = prompt('Введи ник:') || 'Игрок' + Math.floor(Math.random() * 9999); localStorage.setItem('zd_nick', state.nick); }
       ws.send(JSON.stringify({ type: 'hello', playerId: state.playerId, nick: state.nick }));
     };
-
-    ws.onmessage = (ev) => {
-      let msg;
-      try { msg = JSON.parse(ev.data); } catch { return; }
-      handleMessage(msg);
-    };
-
-    ws.onclose = () => {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = setTimeout(connect, 2000);
-    };
+    ws.onmessage = (ev) => { let msg; try { msg = JSON.parse(ev.data); } catch { return; } handleMessage(msg); };
+    ws.onclose = () => { clearTimeout(reconnectTimer); reconnectTimer = setTimeout(connect, 2000); };
     ws.onerror = () => {};
   }
-
-  function send(obj) {
-    if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
-  }
+  function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
 
   function handleMessage(msg) {
     switch (msg.type) {
       case 'hello_ok':
-        state.cases = msg.cases;
-        state.balance = msg.player.balance;
-        state.inventory = msg.player.inventory;
-        state.history = msg.player.history;
-        state.nick = msg.player.nick;
-        renderAll();
-        break;
-
+        state.cases = msg.cases; state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.history = msg.player.history; state.nick = msg.player.nick; renderAll(); break;
       case 'state':
-        state.balance = msg.player.balance;
-        state.inventory = msg.player.inventory;
-        state.history = msg.player.history;
-        renderBalance();
-        renderInventory();
-        updateCaseStates();
-        break;
-
-      case 'case_opened':
-        state.pendingCaseDrop = msg.item;
-        animateRollLocal(state.pendingCaseDrop);
-        break;
-
-      case 'upgrade_result':
-        state.pendingUpgDrop = msg;
-        spinUpgradeWheel(msg);
-        break;
-
-      case 'battles':
-        state.battles = msg.battles;
-        renderBattles();
-        break;
-
-      case 'battle_start':
-        startBattleArena(msg.battle);
-        break;
-
-      case 'battle_progress':
-        onBattleProgress(msg);
-        break;
-
-      case 'battle_finish':
-        onBattleFinish(msg);
-        break;
-
-      case 'error':
-        console.warn('server error:', msg.msg);
-        break;
+        state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.history = msg.player.history; renderBalance(); renderInventory(); updateCaseStates(); break;
+      case 'case_opened': state.pendingCaseDrop = msg.item; animateRollLocal(state.pendingCaseDrop); break;
+      case 'upgrade_result': state.pendingUpgDrop = msg; spinUpgradeWheel(msg); break;
+      case 'battles': state.battles = msg.battles; renderBattles(); break;
+      case 'battle_start': startBattleArena(msg.battle); break;
+      case 'battle_progress': onBattleProgress(msg); break;
+      case 'battle_finish': onBattleFinish(msg); break;
     }
   }
-
-  function renderAll() {
-    renderBalance();
-    renderInventory();
-    renderCases();
-    renderUpgrader();
-    renderBattles();
-    updateCaseStates();
-  }
-
-  function renderBalance() { 
-    $('balance').textContent = fmt(state.balance); 
-    $('profileBalance').textContent = fmt(state.balance) + ' ₽';
-  }
-
+  function renderAll() { renderBalance(); renderInventory(); renderCases(); renderUpgrader(); renderBattles(); updateCaseStates(); }
+  function renderBalance() { $('balance').textContent = fmt(state.balance); $('profileBalance').textContent = fmt(state.balance) + ' ₽'; }
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     const map = { inv: 'viewInv', cases: 'viewCases', upg: 'viewUpg', battles: 'viewBattles' };
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === map[name]));
   }
-  document.querySelectorAll('.tab').forEach(t => {
-    t.addEventListener('click', () => switchTab(t.dataset.tab));
-  });
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
 
-  // ===== ИНВЕНТАРЬ =====
   function renderInventory() {
-    const el = $('inventory');
-    $('invCount').textContent = state.inventory.length + ' предметов';
-    el.innerHTML = '';
-    if (state.inventory.length === 0) {
-      el.innerHTML = '<div class="empty">Пусто.<br>Открывай кейсы, Максим.</div>';
-      return;
-    }
+    const el = $('inventory'); $('invCount').textContent = state.inventory.length + ' предметов'; el.innerHTML = '';
+    if (state.inventory.length === 0) { el.innerHTML = '<div class="empty">Пусто.<br>Открывай кейсы, Максим.</div>'; return; }
     [...state.inventory].reverse().forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'inv-item ' + item.rarity;
-      div.innerHTML = `
-        <div class="inv-icon">${item.icon}</div>
-        <div class="inv-info">
-          <div class="inv-name">${item.name}</div>
-          <div class="inv-rar">${RARITIES[item.rarity].name}</div>
-        </div>
-        <div class="inv-price">${fmt(item.price)} ₽</div>
-      `;
-      div.addEventListener('click', () => {
-        send({ type: 'sell_item', uid: item.uid });
-      });
+      const div = document.createElement('div'); div.className = 'inv-item ' + item.rarity;
+      div.innerHTML = `<div class="inv-icon">${item.icon}</div><div class="inv-info"><div class="inv-name">${item.name}</div><div class="inv-rar">${RARITIES[item.rarity].name}</div></div><div class="inv-price">${fmt(item.price)} ₽</div>`;
+      div.addEventListener('click', () => send({ type: 'sell_item', uid: item.uid }));
       el.appendChild(div);
     });
   }
+  $('sellAll').addEventListener('click', () => { if (state.inventory.length > 0) send({ type: 'sell_all' }); });
 
-  $('sellAll').addEventListener('click', () => {
-    if (state.inventory.length === 0) return;
-    send({ type: 'sell_all' });
-  });
-
-  // ===== КЕЙСЫ =====
-  const elTrack = $('track');
-  const WIN_INDEX = 50;
-  const TRACK_LEN = 60;
-
+  const elTrack = $('track'); const WIN_INDEX = 50; const TRACK_LEN = 60;
   function renderCases() {
-    const el = $('cases');
-    el.innerHTML = '';
+    const el = $('cases'); el.innerHTML = '';
     state.cases.forEach(c => {
-      const div = document.createElement('div');
-      div.className = 'case';
-      div.dataset.id = c.id;
-      div.innerHTML = `
-        <button class="case-info-btn" data-info="${c.id}"></button>
-        <div class="case-open" data-open="${c.id}">
-          <div class="case-icon">${c.icon}</div>
-          <div class="case-name">${c.name}</div>
-          <div class="case-price">${fmt(c.price)} ₽</div>
-        </div>
-      `;
+      const div = document.createElement('div'); div.className = 'case'; div.dataset.id = c.id;
+      div.innerHTML = `<button class="case-info-btn" data-info="${c.id}"></button><div class="case-open" data-open="${c.id}"><div class="case-icon">${c.icon}</div><div class="case-name">${c.name}</div><div class="case-price">${fmt(c.price)} ₽</div></div>`;
       el.appendChild(div);
     });
-    el.querySelectorAll('[data-open]').forEach(e => {
-      e.addEventListener('click', () => {
-        if (state.rolling) return;
-        const c = state.cases.find(x => x.id === e.dataset.open);
-        if (!c || state.balance < c.price) return;
-        state.rolling = true;
-        updateCaseStates();
-        send({ type: 'open_case', caseId: c.id });
-      });
-    });
-    el.querySelectorAll('[data-info]').forEach(e => {
-      e.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        const c = state.cases.find(x => x.id === e.dataset.info);
-        if (c) showCaseInfo(c);
-      });
-    });
+    el.querySelectorAll('[data-open]').forEach(e => e.addEventListener('click', () => {
+      if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.open);
+      if (!c || state.balance < c.price) return; state.rolling = true; updateCaseStates(); send({ type: 'open_case', caseId: c.id });
+    }));
+    el.querySelectorAll('[data-info]').forEach(e => e.addEventListener('click', (ev) => {
+      ev.stopPropagation(); const c = state.cases.find(x => x.id === e.dataset.info); if (c) showCaseInfo(c);
+    }));
   }
-
   function updateCaseStates() {
     document.querySelectorAll('.case').forEach(el => {
       const c = state.cases.find(x => x.id === el.dataset.id);
-      if (!c) return;
-      el.classList.toggle('disabled', state.balance < c.price || state.rolling);
+      if (c) el.classList.toggle('disabled', state.balance < c.price || state.rolling);
     });
   }
-
-  function makeItem(rarity) {
-    const arr = ITEMS[rarity];
-    const base = arr[Math.floor(Math.random() * arr.length)];
-    return { ...base, rarity, uid: Date.now() + Math.random() };
-  }
-
-  function pickRandomRarity() {
-    const arr = ['kaka', 'norm', 'rare', 'epic', 'legend', 'true'];
-    const weights = [40, 35, 18, 5, 1.5, 0.5];
-    const total = weights.reduce((a, b) => a + b, 0);
-    let r = Math.random() * total;
-    for (let i = 0; i < arr.length; i++) {
-      r -= weights[i];
-      if (r <= 0) return arr[i];
-    }
-    return 'kaka';
-  }
+  function makeItem(rarity) { const arr = ITEMS[rarity]; const base = arr[Math.floor(Math.random() * arr.length)]; return { ...base, rarity, uid: Date.now() + Math.random() }; }
+  function pickRandomRarity() { const arr = ['kaka', 'norm', 'rare', 'epic', 'legend', 'true']; const weights = [40, 35, 18, 5, 1.5, 0.5]; const total = weights.reduce((a, b) => a + b, 0); let r = Math.random() * total; for (let i = 0; i < arr.length; i++) { r -= weights[i]; if (r <= 0) return arr[i]; } return 'kaka'; }
 
   function animateRollLocal(finalItem) {
-    elTrack.innerHTML = '';
-    const items = [];
-    for (let i = 0; i < TRACK_LEN; i++) {
-      if (i === WIN_INDEX) items.push(finalItem);
-      else items.push(makeItem(pickRandomRarity()));
-    }
-    items.forEach(it => {
-      const div = document.createElement('div');
-      div.className = 'item ' + it.rarity;
-      div.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>`;
-      elTrack.appendChild(div);
-    });
+    elTrack.innerHTML = ''; const items = [];
+    for (let i = 0; i < TRACK_LEN; i++) { if (i === WIN_INDEX) items.push(finalItem); else items.push(makeItem(pickRandomRarity())); }
+    items.forEach(it => { const div = document.createElement('div'); div.className = 'item ' + it.rarity; div.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>`; elTrack.appendChild(div); });
     requestAnimationFrame(() => {
-      const wrapW = elTrack.parentElement.clientWidth;
-      const first = elTrack.children[0];
-      const rect = first.getBoundingClientRect();
-      const st = getComputedStyle(first);
+      const wrapW = elTrack.parentElement.clientWidth; const first = elTrack.children[0];
+      const rect = first.getBoundingClientRect(); const st = getComputedStyle(first);
       const step = rect.width + (parseFloat(st.marginLeft) || 0) + (parseFloat(st.marginRight) || 0);
-      const winLeft = WIN_INDEX * step;
-      const jitter = rand(-step * 0.15, step * 0.15);
+      const winLeft = WIN_INDEX * step; const jitter = rand(-step * 0.15, step * 0.15);
       const finalX = -(winLeft + step / 2 - wrapW / 2) + jitter;
-      elTrack.style.transition = 'none';
-      elTrack.style.transform = 'translateX(0px)';
-      void elTrack.offsetWidth;
+      elTrack.style.transition = 'none'; elTrack.style.transform = 'translateX(0px)'; void elTrack.offsetWidth;
       const duration = rand(3800, 4600);
       elTrack.style.transition = `transform ${duration}ms cubic-bezier(0.12, 0.8, 0.2, 1)`;
       elTrack.style.transform = `translateX(${finalX}px)`;
-
-      setTimeout(() => {
-        state.rolling = false;
-        updateCaseStates();
-        showWin(finalItem);
-      }, duration + 100);
+      setTimeout(() => { state.rolling = false; updateCaseStates(); showWin(finalItem); }, duration + 100);
     });
   }
-
   function showWin(item) {
-    const rar = RARITIES[item.rarity];
-    $('winCard').style.setProperty('--rar', rar.color);
-    $('winIcon').textContent = item.icon;
-    $('winRar').textContent = rar.name;
-    $('winRar').style.color = rar.color;
-    $('winName').textContent = item.name;
-    $('winPrice').textContent = fmt(item.price) + ' ₽';
-    $('overlay').classList.add('show');
+    const rar = RARITIES[item.rarity]; $('winCard').style.setProperty('--rar', rar.color); $('winIcon').textContent = item.icon; $('winRar').textContent = rar.name; $('winRar').style.color = rar.color; $('winName').textContent = item.name; $('winPrice').textContent = fmt(item.price) + ' ₽'; $('overlay').classList.add('show');
   }
-  $('winClose').addEventListener('click', () => {
-    $('overlay').classList.remove('show');
-    renderInventory();
-    updateCaseStates();
-    state.rolling = false;
-  });
-
+  $('winClose').addEventListener('click', () => { $('overlay').classList.remove('show'); renderInventory(); updateCaseStates(); state.rolling = false; });
   function showCaseInfo(c) {
-    $('infoTitle').textContent = c.icon + ' ' + c.name;
-    $('infoSub').textContent = 'Цена: ' + fmt(c.price) + ' ₽';
-    $('infoList').innerHTML = '';
+    $('infoTitle').textContent = c.icon + ' ' + c.name; $('infoSub').textContent = 'Цена: ' + fmt(c.price) + ' ₽'; $('infoList').innerHTML = '';
     RARITY_ORDER.forEach(rar => {
-      const header = document.createElement('div');
-      header.style.cssText = 'font-size:11px;letter-spacing:1px;text-transform:uppercase;color:' + RARITIES[rar].color + ';font-weight:700;margin:8px 2px 2px;';
-      header.textContent = RARITIES[rar].name;
-      $('infoList').appendChild(header);
-      ITEMS[rar].forEach(it => {
-        const row = document.createElement('div');
-        row.className = 'info-row ' + rar;
-        row.innerHTML = `
-          <div class="ir-icon">${it.icon}</div>
-          <div class="ir-name">${it.name}</div>
-          <div class="ir-price">${fmt(it.price)} ₽</div>
-        `;
-        $('infoList').appendChild(row);
-      });
+      const header = document.createElement('div'); header.style.cssText = 'font-size:11px;letter-spacing:1px;text-transform:uppercase;color:' + RARITIES[rar].color + ';font-weight:700;margin:8px 2px 2px;'; header.textContent = RARITIES[rar].name; $('infoList').appendChild(header);
+      ITEMS[rar].forEach(it => { const row = document.createElement('div'); row.className = 'info-row ' + rar; row.innerHTML = `<div class="ir-icon">${it.icon}</div><div class="ir-name">${it.name}</div><div class="ir-price">${fmt(it.price)} ₽</div>`; $('infoList').appendChild(row); });
     });
     $('infoOverlay').classList.add('show');
   }
   $('infoClose').addEventListener('click', () => $('infoOverlay').classList.remove('show'));
 
-  // ===== АПГРЕЙДЕР =====
-  function findItemByUid(uid) {
-    return state.inventory.find(i => i.uid === uid) || null;
-  }
-
+  function findItemByUid(uid) { return state.inventory.find(i => i.uid === uid) || null; }
   function getTargets(source) {
-    if (!source) return [];
-    const list = [];
-    RARITY_ORDER.forEach(rar => {
-      ITEMS[rar].forEach((it, index) => {
-        if (it.price > source.price) list.push({ rarity: rar, index, ...it });
-      });
-    });
-    list.sort((a, b) => a.price - b.price);
-    return list;
+    if (!source) return []; const list = [];
+    RARITY_ORDER.forEach(rar => { ITEMS[rar].forEach((it, index) => { if (it.price > source.price) list.push({ rarity: rar, index, ...it }); }); });
+    list.sort((a, b) => a.price - b.price); return list;
   }
-
-  function calcChance(source, target) {
-    if (!source || !target) return null;
-    const mult = target.price / source.price;
-    let chance = (1 / mult);
-    if (chance < 0.0001) return 0;
-    return Math.min(0.99, chance);
-  }
-
-  const WHEEL_R = 48, WHEEL_C = 50;
-  const GOLD_CHANCE = 0.4, GOLD_SIZE = 0.10, GOLD_MIN_RATIO = 0.8;
-
-  function polarToXY(angleDeg, r) {
-    const a = (angleDeg - 90) * Math.PI / 180;
-    return { x: WHEEL_C + r * Math.cos(a), y: WHEEL_C + r * Math.sin(a) };
-  }
-  function arcPath(s, e, r) {
-    const st = polarToXY(s, r), en = polarToXY(e, r);
-    const large = (e - s) > 180 ? 1 : 0;
-    return `M ${WHEEL_C} ${WHEEL_C} L ${st.x} ${st.y} A ${r} ${r} 0 ${large} 1 ${en.x} ${en.y} Z`;
-  }
+  function calcChance(source, target) { if (!source || !target) return null; const mult = target.price / source.price; let chance = (1 / mult); if (chance < 0.0001) return 0; return Math.min(0.99, chance); }
+  const WHEEL_R = 48, WHEEL_C = 50; const GOLD_CHANCE = 0.4, GOLD_SIZE = 0.10, GOLD_MIN_RATIO = 0.8;
+  function polarToXY(angleDeg, r) { const a = (angleDeg - 90) * Math.PI / 180; return { x: WHEEL_C + r * Math.cos(a), y: WHEEL_C + r * Math.sin(a) }; }
+  function arcPath(s, e, r) { const st = polarToXY(s, r), en = polarToXY(e, r); const large = (e - s) > 180 ? 1 : 0; return `M ${WHEEL_C} ${WHEEL_C} L ${st.x} ${st.y} A ${r} ${r} 0 ${large} 1 ${en.x} ${en.y} Z`; }
   function wheelGeometry(chance, goldActive) {
-    const p = chance == null ? 0.5 : Math.max(0, Math.min(0.99, chance));
-    const winDeg = p * 360;
-    let goldDeg = 0;
-    if (goldActive && chance != null && p > 0) {
-      if (winDeg <= GOLD_SIZE * 360) goldDeg = winDeg * GOLD_MIN_RATIO;
-      else goldDeg = GOLD_SIZE * 360;
-      goldDeg = Math.min(goldDeg, winDeg);
-    }
-    const goldStart = (winDeg - goldDeg) / 2;
-    return { winDeg, goldDeg, goldStart, goldEnd: goldStart + goldDeg };
+    const p = chance == null ? 0.5 : Math.max(0, Math.min(0.99, chance)); const winDeg = p * 360; let goldDeg = 0;
+    if (goldActive && chance != null && p > 0) { if (winDeg <= GOLD_SIZE * 360) goldDeg = winDeg * GOLD_MIN_RATIO; else goldDeg = GOLD_SIZE * 360; goldDeg = Math.min(goldDeg, winDeg); }
+    const goldStart = (winDeg - goldDeg) / 2; return { winDeg, goldDeg, goldStart, goldEnd: goldStart + goldDeg };
   }
   const elWheelSvg = $('wheelSvg');
   function renderWheel(chance, goldActive) {
-    elWheelSvg.innerHTML = '';
-    const g = wheelGeometry(chance, goldActive);
-    function seg(s, e, cls) {
-      if (e - s < 0.1) return;
-      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      p.setAttribute('d', arcPath(s, e, WHEEL_R));
-      p.setAttribute('class', cls);
-      elWheelSvg.appendChild(p);
-    }
-    seg(0, g.goldStart, 'seg-win');
-    seg(g.goldStart, g.goldEnd, 'seg-gold');
-    seg(g.goldEnd, g.winDeg, 'seg-win');
-    seg(g.winDeg, 360, 'seg-lose');
-    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    ring.setAttribute('cx', WHEEL_C); ring.setAttribute('cy', WHEEL_C);
-    ring.setAttribute('r', WHEEL_R); ring.setAttribute('fill', 'none');
-    ring.setAttribute('stroke', 'rgba(0,0,0,0.4)'); ring.setAttribute('stroke-width', '1');
-    elWheelSvg.appendChild(ring);
+    elWheelSvg.innerHTML = ''; const g = wheelGeometry(chance, goldActive);
+    function seg(s, e, cls) { if (e - s < 0.1) return; const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', arcPath(s, e, WHEEL_R)); p.setAttribute('class', cls); elWheelSvg.appendChild(p); }
+    seg(0, g.goldStart, 'seg-win'); seg(g.goldStart, g.goldEnd, 'seg-gold'); seg(g.goldEnd, g.winDeg, 'seg-win'); seg(g.winDeg, 360, 'seg-lose');
+    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); ring.setAttribute('cx', WHEEL_C); ring.setAttribute('cy', WHEEL_C); ring.setAttribute('r', WHEEL_R); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', 'rgba(0,0,0,0.4)'); ring.setAttribute('stroke-width', '1'); elWheelSvg.appendChild(ring);
   }
-
   function setWheelInfo(chance) {
     const chVal = $('upgChanceValue'), chMult = $('upgMult');
-    if (chance == null) {
-      chVal.textContent = '—'; chVal.style.color = 'var(--dim)'; chMult.textContent = 'x0'; return;
-    }
-    if (chance === 0) {
-      chVal.textContent = '0.00%'; chVal.style.color = chanceColor(0); chMult.textContent = '∞'; return;
-    }
-    chVal.textContent = fmtChance(chance);
-    chVal.style.color = chanceColor(chance);
-    chMult.textContent = 'x' + (1 / chance).toFixed(2);
+    if (chance == null) { chVal.textContent = '—'; chVal.style.color = 'var(--dim)'; chMult.textContent = 'x0'; return; }
+    if (chance === 0) { chVal.textContent = '0.00%'; chVal.style.color = chanceColor(0); chMult.textContent = '∞'; return; }
+    chVal.textContent = fmtChance(chance); chVal.style.color = chanceColor(chance); chMult.textContent = 'x' + (1 / chance).toFixed(2);
   }
-
   function renderUpgrader() {
-    const source = findItemByUid(state.upgSource);
-    const target = state.upgTarget;
-
-    const srcEl = $('upgSourceSlot');
-    srcEl.className = 'upg-slot';
-    if (source) {
-      srcEl.classList.add('filled', source.rarity);
-      srcEl.innerHTML = `
-        <div class="slot-icon">${source.icon}</div>
-        <div class="slot-name">${source.name}</div>
-        <div class="slot-price">${fmt(source.price)} ₽</div>
-      `;
-    } else {
-      srcEl.innerHTML = `<div class="slot-empty">+</div><div class="slot-hint">Ставка</div>`;
-    }
+    const source = findItemByUid(state.upgSource); const target = state.upgTarget;
+    const srcEl = $('upgSourceSlot'); srcEl.className = 'upg-slot';
+    if (source) { srcEl.classList.add('filled', source.rarity); srcEl.innerHTML = `<div class="slot-icon">${source.icon}</div><div class="slot-name">${source.name}</div><div class="slot-price">${fmt(source.price)} ₽</div>`; } else { srcEl.innerHTML = `<div class="slot-empty">+</div><div class="slot-hint">Ставка</div>`; }
     srcEl.onclick = () => { if (!state.upgRolling) openPicker(); };
-
-    const tgtEl = $('upgTargetSlot');
-    tgtEl.className = 'upg-slot';
+    const tgtEl = $('upgTargetSlot'); tgtEl.className = 'upg-slot';
     if (target) {
-      tgtEl.classList.add('filled', target.rarity);
-      tgtEl.innerHTML = `
-        <div class="slot-icon">${target.icon}</div>
-        <div class="slot-name">${target.name}</div>
-        <div class="slot-price">${fmt(target.price)} ₽</div>
-      `;
-      tgtEl.onclick = () => {
-        if (state.upgRolling) return;
-        state.upgTarget = null;
-        renderUpgrader();
-      };
+      tgtEl.classList.add('filled', target.rarity); tgtEl.innerHTML = `<div class="slot-icon">${target.icon}</div><div class="slot-name">${target.name}</div><div class="slot-price">${fmt(target.price)} ₽</div>`;
+      tgtEl.onclick = () => { if (state.upgRolling) return; state.upgTarget = null; renderUpgrader(); };
     } else {
       tgtEl.innerHTML = `<div class="slot-empty">?</div><div class="slot-hint">Цель</div>`;
-      tgtEl.onclick = () => {
-        if (state.upgRolling) return;
-        if (!source) { openPicker(); return; }
-        openTargetPicker();
-      };
+      tgtEl.onclick = () => { if (state.upgRolling) return; if (!source) { openPicker(); return; } openTargetPicker(); };
     }
-
-    const chance = calcChance(source, target);
-    renderWheel(chance, state.goldActive && state.upgRolling);
-    setWheelInfo(chance);
-    elWheelSvg.style.transition = 'none';
-    elWheelSvg.style.transform = 'rotate(0deg)';
-    $('upgGo').disabled = !(source && target) || state.upgRolling || chance === 0;
+    const chance = calcChance(source, target); renderWheel(chance, state.goldActive && state.upgRolling); setWheelInfo(chance);
+    elWheelSvg.style.transition = 'none'; elWheelSvg.style.transform = 'rotate(0deg)'; $('upgGo').disabled = !(source && target) || state.upgRolling || chance === 0;
   }
-
   function openPicker() {
-    const el = $('pickerList');
-    el.innerHTML = '';
-    if (state.inventory.length === 0) {
-      el.innerHTML = '<div class="empty">Инвентарь пуст.<br>Открывай кейсы.</div>';
-    } else {
+    const el = $('pickerList'); el.innerHTML = '';
+    if (state.inventory.length === 0) { el.innerHTML = '<div class="empty">Инвентарь пуст.<br>Открывай кейсы.</div>'; } else {
       [...state.inventory].sort((a, b) => b.price - a.price).forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'inv-item ' + item.rarity;
-        div.innerHTML = `
-          <div class="inv-icon">${item.icon}</div>
-          <div class="inv-info">
-            <div class="inv-name">${item.name}</div>
-            <div class="inv-rar">${RARITIES[item.rarity].name}</div>
-          </div>
-          <div class="inv-price">${fmt(item.price)} ₽</div>
-        `;
-        div.addEventListener('click', () => {
-          state.upgSource = item.uid;
-          if (state.upgTarget && state.upgTarget.price <= item.price) state.upgTarget = null;
-          $('pickerOverlay').classList.remove('show');
-          renderUpgrader();
-        });
+        const div = document.createElement('div'); div.className = 'inv-item ' + item.rarity;
+        div.innerHTML = `<div class="inv-icon">${item.icon}</div><div class="inv-info"><div class="inv-name">${item.name}</div><div class="inv-rar">${RARITIES[item.rarity].name}</div></div><div class="inv-price">${fmt(item.price)} ₽</div>`;
+        div.addEventListener('click', () => { state.upgSource = item.uid; if (state.upgTarget && state.upgTarget.price <= item.price) state.upgTarget = null; $('pickerOverlay').classList.remove('show'); renderUpgrader(); });
         el.appendChild(div);
       });
     }
     $('pickerOverlay').classList.add('show');
   }
-
   function openTargetPicker() {
-    const source = findItemByUid(state.upgSource);
-    if (!source) { openPicker(); return; }
+    const source = findItemByUid(state.upgSource); if (!source) { openPicker(); return; }
     $('targetPickerSub').textContent = 'Дороже ставки: ' + source.icon + ' ' + source.name + ' (' + fmt(source.price) + ' ₽)';
-    const el = $('targetPickerList');
-    el.innerHTML = '';
-    const targets = getTargets(source);
-    if (targets.length === 0) {
-      el.innerHTML = '<div class="empty">Нет целей дороже ставки.</div>';
-      $('targetPickerOverlay').classList.add('show');
-      return;
-    }
-    const groups = {};
-    targets.forEach(t => { if (!groups[t.rarity]) groups[t.rarity] = []; groups[t.rarity].push(t); });
+    const el = $('targetPickerList'); el.innerHTML = ''; const targets = getTargets(source);
+    if (targets.length === 0) { el.innerHTML = '<div class="empty">Нет целей дороже ставки.</div>'; $('targetPickerOverlay').classList.add('show'); return; }
+    const groups = {}; targets.forEach(t => { if (!groups[t.rarity]) groups[t.rarity] = []; groups[t.rarity].push(t); });
     RARITY_ORDER.forEach(rar => {
-      if (!groups[rar]) return;
-      const sec = document.createElement('div');
-      sec.className = 'picker-section';
-      sec.style.color = RARITIES[rar].color;
-      sec.textContent = RARITIES[rar].name;
-      el.appendChild(sec);
+      if (!groups[rar]) return; const sec = document.createElement('div'); sec.className = 'picker-section'; sec.style.color = RARITIES[rar].color; sec.textContent = RARITIES[rar].name; el.appendChild(sec);
       groups[rar].forEach(t => {
-        const ch = calcChance(source, t);
-        const div = document.createElement('div');
-        div.className = 'inv-item ' + t.rarity;
-        div.innerHTML = `
-          <div class="inv-icon">${t.icon}</div>
-          <div class="inv-info">
-            <div class="inv-name">${t.name}</div>
-            <div class="inv-rar">${RARITIES[t.rarity].name}</div>
-          </div>
-          <div class="inv-price">${fmt(t.price)} ₽</div>
-          <div style="color:${chanceColor(ch)};font-size:11px;font-weight:700;margin-left:6px;">${fmtChance(ch)}</div>
-        `;
-        div.addEventListener('click', () => {
-          state.upgTarget = t;
-          $('targetPickerOverlay').classList.remove('show');
-          renderUpgrader();
-        });
+        const ch = calcChance(source, t); const div = document.createElement('div'); div.className = 'inv-item ' + t.rarity;
+        div.innerHTML = `<div class="inv-icon">${t.icon}</div><div class="inv-info"><div class="inv-name">${t.name}</div><div class="inv-rar">${RARITIES[t.rarity].name}</div></div><div class="inv-price">${fmt(t.price)} ₽</div><div style="color:${chanceColor(ch)};font-size:11px;font-weight:700;margin-left:6px;">${fmtChance(ch)}</div>`;
+        div.addEventListener('click', () => { state.upgTarget = t; $('targetPickerOverlay').classList.remove('show'); renderUpgrader(); });
         el.appendChild(div);
       });
     });
     $('targetPickerOverlay').classList.add('show');
   }
-
   $('pickerClose').addEventListener('click', () => $('pickerOverlay').classList.remove('show'));
   $('targetPickerClose').addEventListener('click', () => $('targetPickerOverlay').classList.remove('show'));
-  $('upgClear').addEventListener('click', () => {
-    if (state.upgRolling) return;
-    state.upgSource = null;
-    state.upgTarget = null;
-    state.goldActive = false;
-    renderUpgrader();
-  });
-
+  $('upgClear').addEventListener('click', () => { if (state.upgRolling) return; state.upgSource = null; state.upgTarget = null; state.goldActive = false; renderUpgrader(); });
   $('upgGo').addEventListener('click', () => {
-    const source = findItemByUid(state.upgSource);
-    const target = state.upgTarget;
-    if (!source || !target || state.upgRolling) return;
-    const chance = calcChance(source, target);
-    if (!chance) return;
-    state.upgRolling = true;
-    state.goldActive = false;
-    $('upgGo').disabled = true;
+    const source = findItemByUid(state.upgSource); const target = state.upgTarget;
+    if (!source || !target || state.upgRolling) return; const chance = calcChance(source, target); if (!chance) return;
+    state.upgRolling = true; state.goldActive = false; $('upgGo').disabled = true;
     send({ type: 'upgrade', sourceUid: source.uid, target: { rarity: target.rarity, icon: target.icon, name: target.name, price: target.price } });
   });
-
   function spinUpgradeWheel(msg) {
-    const { result, chance, target, goldActive, source } = msg;
-    state.goldActive = goldActive;
-    renderWheel(chance, goldActive);
-    const g = wheelGeometry(chance, goldActive);
-    let targetAngle;
-    if (result === 'gold') {
-      targetAngle = rand(g.goldStart + 0.02 * g.goldDeg, g.goldEnd - 0.02 * g.goldDeg);
-      if (g.goldDeg < 2) targetAngle = (g.goldStart + g.goldEnd) / 2;
-    } else if (result === 'win') {
+    const { result, chance, target, goldActive, source } = msg; state.goldActive = goldActive; renderWheel(chance, goldActive);
+    const g = wheelGeometry(chance, goldActive); let targetAngle;
+    if (result === 'gold') { targetAngle = rand(g.goldStart + 0.02 * g.goldDeg, g.goldEnd - 0.02 * g.goldDeg); if (g.goldDeg < 2) targetAngle = (g.goldStart + g.goldEnd) / 2; }
+    else if (result === 'win') {
       const top = g.goldStart, bot = g.winDeg - g.goldEnd;
-      if (g.goldDeg > 0.1 && top + bot > 1) {
-        const r = Math.random() * (top + bot);
-        if (r < top) targetAngle = rand(0.02 * top, top - 0.02 * top);
-        else targetAngle = rand(g.goldEnd + 0.02 * bot, g.winDeg - 0.02 * bot);
-      } else targetAngle = rand(0, g.winDeg * 0.98);
-    } else {
-      const loseStart = g.winDeg, loseSize = 360 - loseStart;
-      targetAngle = rand(loseStart + 0.02 * loseSize, 360 - 0.02 * loseSize);
-    }
-    const turns = 4 + Math.floor(Math.random() * 3);
-    const finalRotation = -targetAngle - turns * 360;
-    elWheelSvg.style.transition = 'none';
-    elWheelSvg.style.transform = 'rotate(0deg)';
-    void elWheelSvg.offsetWidth;
-    elWheelSvg.style.transition = 'transform 4000ms cubic-bezier(0.15, 0.9, 0.25, 1)';
-    elWheelSvg.style.transform = `rotate(${finalRotation}deg)`;
-
+      if (g.goldDeg > 0.1 && top + bot > 1) { const r = Math.random() * (top + bot); if (r < top) targetAngle = rand(0.02 * top, top - 0.02 * top); else targetAngle = rand(g.goldEnd + 0.02 * bot, g.winDeg - 0.02 * bot); }
+      else targetAngle = rand(0, g.winDeg * 0.98);
+    } else { const loseStart = g.winDeg, loseSize = 360 - loseStart; targetAngle = rand(loseStart + 0.02 * loseSize, 360 - 0.02 * loseSize); }
+    const turns = 4 + Math.floor(Math.random() * 3); const finalRotation = -targetAngle - turns * 360;
+    elWheelSvg.style.transition = 'none'; elWheelSvg.style.transform = 'rotate(0deg)'; void elWheelSvg.offsetWidth;
+    elWheelSvg.style.transition = 'transform 4000ms cubic-bezier(0.15, 0.9, 0.25, 1)'; elWheelSvg.style.transform = `rotate(${finalRotation}deg)`;
     setTimeout(() => {
-      state.upgRolling = false;
-      state.goldActive = false;
-      state.upgSource = null;
-      state.upgTarget = null;
-      renderUpgrader();
-
-      if (result === 'gold') {
-        $('winCard').style.setProperty('--rar', '#fbbf24');
-        $('winIcon').textContent = '🌟';
-        $('winRar').textContent = 'ЗОЛОТО! x2';
-        $('winRar').style.color = '#fbbf24';
-        $('winName').textContent = msg.wonItem.icon + ' ' + msg.wonItem.name;
-        $('winPrice').textContent = 'Шанс ' + fmtChance(chance) + ' • цель ' + target.name;
-      } else if (result === 'win') {
-        const rar = RARITIES[msg.wonItem.rarity];
-        $('winCard').style.setProperty('--rar', rar.color);
-        $('winIcon').textContent = '✅';
-        $('winRar').textContent = 'АПГРЕЙД УДАЛСЯ';
-        $('winRar').style.color = rar.color;
-        $('winName').textContent = msg.wonItem.icon + ' ' + msg.wonItem.name;
-        $('winPrice').textContent = 'Шанс был ' + fmtChance(chance);
-      } else {
-        $('winCard').style.setProperty('--rar', '#ff2d6f');
-        $('winIcon').textContent = '💀';
-        $('winRar').textContent = 'ПРОВАЛ';
-        $('winRar').style.color = '#ff2d6f';
-        $('winName').textContent = 'Потерян: ' + (source ? source.icon + ' ' + source.name : 'предмет');
-        $('winPrice').textContent = 'Шанс был ' + fmtChance(chance);
-      }
+      state.upgRolling = false; state.goldActive = false; state.upgSource = null; state.upgTarget = null; renderUpgrader();
+      if (result === 'gold') { $('winCard').style.setProperty('--rar', '#fbbf24'); $('winIcon').textContent = '🌟'; $('winRar').textContent = 'ЗОЛОТО! x2'; $('winRar').style.color = '#fbbf24'; $('winName').textContent = msg.wonItem.icon + ' ' + msg.wonItem.name; $('winPrice').textContent = 'Шанс ' + fmtChance(chance) + ' • цель ' + target.name; }
+      else if (result === 'win') { const rar = RARITIES[msg.wonItem.rarity]; $('winCard').style.setProperty('--rar', rar.color); $('winIcon').textContent = '✅'; $('winRar').textContent = 'АПГРЕЙД УДАЛСЯ'; $('winRar').style.color = rar.color; $('winName').textContent = msg.wonItem.icon + ' ' + msg.wonItem.name; $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
+      else { $('winCard').style.setProperty('--rar', '#ff2d6f'); $('winIcon').textContent = '💀'; $('winRar').textContent = 'ПРОВАЛ'; $('winRar').style.color = '#ff2d6f'; $('winName').textContent = 'Потерян: ' + (source ? source.icon + ' ' + source.name : 'предмет'); $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
       $('overlay').classList.add('show');
     }, 4100);
   }
 
   // ===== БАТЛЫ =====
   let battleCaseSelection = [];
-
   function renderBattles() {
-    const el = $('battlesList');
-    el.innerHTML = '';
-    if (state.battles.length === 0) {
-      el.innerHTML = '<div class="empty">Открытых батлов нет.<br>Создай первый.</div>';
-      return;
-    }
+    const el = $('battlesList'); el.innerHTML = '';
+    if (state.battles.length === 0) { el.innerHTML = '<div class="empty">Открытых батлов нет.<br>Создай первый.</div>'; return; }
     state.battles.forEach(b => {
-      const div = document.createElement('div');
-      div.className = 'battle-item';
-      const isOwn = b.creatorNick === state.nick;
-      div.innerHTML = `
-        <div class="bi-top">
-          <div class="bi-nick">${b.creatorNick}</div>
-          <div class="bi-price">${fmt(b.price)} ₽</div>
-        </div>
-        <div class="bi-cases">
-          ${b.cases.map(c => `<span class="bi-case">${c.icon} ${c.name}</span>`).join('')}
-        </div>
-        <div class="bi-actions">
-          ${isOwn
-            ? `<button class="bi-cancel" data-cancel="${b.id}">Отменить (возврат)</button>`
-            : `<button class="bi-join" data-join="${b.id}">Войти</button>`
-          }
-        </div>
-      `;
+      const div = document.createElement('div'); div.className = 'battle-item'; const isOwn = b.creatorNick === state.nick;
+      div.innerHTML = `<div class="bi-top"><div class="bi-nick">${b.creatorNick}</div><div class="bi-price">${fmt(b.price)} ₽</div></div><div class="bi-cases">${b.cases.map(c => `<span class="bi-case">${c.icon} ${c.name}</span>`).join('')}</div><div class="bi-actions">${isOwn ? `<button class="bi-cancel" data-cancel="${b.id}">Отменить (возврат)</button>` : `<button class="bi-join" data-join="${b.id}">Войти</button>`}</div>`;
       el.appendChild(div);
     });
-    el.querySelectorAll('[data-join]').forEach(e => {
-      e.addEventListener('click', () => {
-        send({ type: 'battle_join', battleId: e.dataset.join });
-      });
-    });
-    el.querySelectorAll('[data-cancel]').forEach(e => {
-      e.addEventListener('click', () => {
-        send({ type: 'battle_cancel', battleId: e.dataset.cancel });
-      });
-    });
+    el.querySelectorAll('[data-join]').forEach(e => e.addEventListener('click', () => send({ type: 'battle_join', battleId: e.dataset.join })));
+    el.querySelectorAll('[data-cancel]').forEach(e => e.addEventListener('click', () => send({ type: 'battle_cancel', battleId: e.dataset.cancel })));
   }
-
-  $('battleCreateBtn').addEventListener('click', () => {
-    battleCaseSelection = [];
-    renderBattleCasePicker();
-    $('battleCreateOverlay').classList.add('show');
-  });
+  $('battleCreateBtn').addEventListener('click', () => { battleCaseSelection = []; renderBattleCasePicker(); $('battleCreateOverlay').classList.add('show'); });
   $('battleCreateClose').addEventListener('click', () => $('battleCreateOverlay').classList.remove('show'));
-
   function renderBattleCasePicker() {
-    const el = $('battleCasePicker');
-    el.innerHTML = '';
+    const el = $('battleCasePicker'); el.innerHTML = '';
     state.cases.forEach(c => {
-      const div = document.createElement('div');
-      div.className = 'inv-item ' + 'norm';
-      div.style.cursor = 'pointer';
-      const count = battleCaseSelection.filter(x => x === c.id).length;
-      div.innerHTML = `
-        <div class="inv-icon">${c.icon}</div>
-        <div class="inv-info">
-          <div class="inv-name">${c.name}</div>
-          <div class="inv-rar">${fmt(c.price)} ₽</div>
-        </div>
-        <div style="font-weight:700;color:${count > 0 ? 'var(--accent)' : 'var(--dim)'};">${count > 0 ? '×' + count : '+'}</div>
-      `;
-      div.addEventListener('click', () => {
-        if (battleCaseSelection.length >= 20) return;
-        battleCaseSelection.push(c.id);
-        renderBattleCasePicker();
-      });
+      const div = document.createElement('div'); div.className = 'inv-item ' + 'norm'; div.style.cursor = 'pointer'; const count = battleCaseSelection.filter(x => x === c.id).length;
+      div.innerHTML = `<div class="inv-icon">${c.icon}</div><div class="inv-info"><div class="inv-name">${c.name}</div><div class="inv-rar">${fmt(c.price)} ₽</div></div><div style="font-weight:700;color:${count > 0 ? 'var(--accent)' : 'var(--dim)'};">${count > 0 ? '×' + count : '+'}</div>`;
+      div.addEventListener('click', () => { if (battleCaseSelection.length >= 20) return; battleCaseSelection.push(c.id); renderBattleCasePicker(); });
       el.appendChild(div);
     });
-    const total = battleCaseSelection.reduce((s, id) => {
-      const c = state.cases.find(x => x.id === id);
-      return s + (c ? c.price : 0);
-    }, 0);
-    $('battleTotal').textContent = fmt(total) + ' ₽';
-    $('battleCreateSub').textContent = `Выбрано: ${battleCaseSelection.length}/20 · Баланс: ${fmt(state.balance)} ₽`;
+    const total = battleCaseSelection.reduce((s, id) => { const c = state.cases.find(x => x.id === id); return s + (c ? c.price : 0); }, 0);
+    $('battleTotal').textContent = fmt(total) + ' ₽'; $('battleCreateSub').textContent = `Выбрано: ${battleCaseSelection.length}/20 · Баланс: ${fmt(state.balance)} ₽`;
     $('battleCreateConfirm').disabled = battleCaseSelection.length === 0 || total > state.balance;
     $('battleCreateConfirm').style.opacity = (battleCaseSelection.length === 0 || total > state.balance) ? '0.4' : '1';
   }
-
   $('battleCreateConfirm').addEventListener('click', () => {
-    const total = battleCaseSelection.reduce((s, id) => {
-      const c = state.cases.find(x => x.id === id);
-      return s + (c ? c.price : 0);
-    }, 0);
+    const total = battleCaseSelection.reduce((s, id) => { const c = state.cases.find(x => x.id === id); return s + (c ? c.price : 0); }, 0);
     if (battleCaseSelection.length === 0 || total > state.balance) return;
-    send({ type: 'battle_create', caseIds: battleCaseSelection });
-    $('battleCreateOverlay').classList.remove('show');
+    send({ type: 'battle_create', caseIds: battleCaseSelection }); $('battleCreateOverlay').classList.remove('show');
   });
 
-  // ===== АРЕНА БАТЛА =====
   let arenaState = null;
-
   function startBattleArena(battle) {
-    // Блокируем кнопку в батлах, пока играем
     document.querySelectorAll('.battle-item button').forEach(b => b.disabled = true);
-    
-    $('battleArena').classList.add('show');
-    $('arenaStatus').textContent = 'Приготовьтесь!';
+    $('battleArena').classList.add('show'); $('arenaStatus').textContent = 'Приготовьтесь!';
+    const isCreator = state.playerId === battle.creatorId; const myNick = isCreator ? battle.creatorNick : battle.joinerNick; const oppNick = isCreator ? battle.joinerNick : battle.creatorNick;
+    $('arenaLeftName').textContent = myNick + ' (ты)'; $('arenaRightName').textContent = oppNick;
+    $('arenaLeftSum').textContent = '0 ₽'; $('arenaRightSum').textContent = '0 ₽'; $('arenaLeftTrack').innerHTML = ''; $('arenaRightTrack').innerHTML = '';
+    $('arenaLeftTrack').dataset.animating = 'false'; $('arenaRightTrack').dataset.animating = 'false';
 
-    const isCreator = state.playerId === battle.creatorId;
-    const myNick = isCreator ? battle.creatorNick : battle.joinerNick;
-    const oppNick = isCreator ? battle.joinerNick : battle.creatorNick;
+    arenaState = { battle, myId: state.playerId, myDrops: null, oppDrops: null };
 
-    $('arenaLeftName').textContent = myNick + ' (ты)';
-    $('arenaRightName').textContent = oppNick;
-    $('arenaLeftSum').textContent = '0 ₽';
-    $('arenaRightSum').textContent = '0 ₽';
-    $('arenaLeftTrack').innerHTML = '';
-    $('arenaRightTrack').innerHTML = '';
-
-    arenaState = {
-      battle,
-      myId: state.playerId,
-      myDrops: null,
-      oppDrops: null,
-      animDone: false
-    };
-
-    // Обратный отсчёт
-    let count = 5;
-    const countEl = $('arenaCountdown');
-    countEl.style.display = 'flex';
-    countEl.textContent = count;
-
+    let count = 5; const countEl = $('arenaCountdown'); countEl.style.display = 'flex'; countEl.textContent = count;
     const timer = setInterval(() => {
       count--;
-      if (count > 0) {
-        countEl.textContent = count;
-        countEl.style.animation = 'none';
-        void countEl.offsetWidth;
-        countEl.style.animation = 'popIn 0.5s ease-out';
-      } else {
-        clearInterval(timer);
-        countEl.style.display = 'none';
-        $('arenaStatus').textContent = 'Крутим!';
-        
-        // Запускаем анимацию (сервер уже начал считать, когда второй зашёл)
-        // Но анимацию запускаем по команде, чтобы визуально совпадало
-        if (arenaState.myDrops) startVerticalRoll(arenaState.myDrops, 'arenaLeftTrack');
-        if (arenaState.oppDrops) startVerticalRoll(arenaState.oppDrops, 'arenaRightTrack');
-        checkArenaFinish();
+      if (count > 0) { countEl.textContent = count; countEl.style.animation = 'none'; void countEl.offsetWidth; countEl.style.animation = 'popIn 0.5s ease-out'; }
+      else {
+        clearInterval(timer); countEl.style.display = 'none'; $('arenaStatus').textContent = 'Крутим!';
+        send({ type: 'battle_roll', battleId: arenaState.battle.id }); // Отправляем запрос на сервер
       }
     }, 1000);
   }
@@ -1452,159 +521,66 @@
   function onBattleProgress(msg) {
     if (!arenaState || msg.battleId !== arenaState.battle.id) return;
     const isMe = msg.playerId === state.playerId;
-    if (isMe) arenaState.myDrops = msg.drops;
-    else arenaState.oppDrops = msg.drops;
-
-    // Показываем итоговые суммы сразу
+    if (isMe) arenaState.myDrops = msg.drops; else arenaState.oppDrops = msg.drops;
     let sum = msg.drops.reduce((s, i) => s + i.price, 0);
-    if (isMe) $('arenaLeftSum').textContent = fmt(sum) + ' ₽';
-    else $('arenaRightSum').textContent = fmt(sum) + ' ₽';
-
-    // Если отсчёт закончился (countdown скрыт), запускаем анимацию сразу
-    if ($('arenaCountdown').style.display === 'none' || $('arenaCountdown').style.display === '') {
-      startVerticalRoll(msg.drops, isMe ? 'arenaLeftTrack' : 'arenaRightTrack');
-    }
-    checkArenaFinish();
+    if (isMe) $('arenaLeftSum').textContent = fmt(sum) + ' ₽'; else $('arenaRightSum').textContent = fmt(sum) + ' ₽';
+    startVerticalRoll(msg.drops, isMe ? 'arenaLeftTrack' : 'arenaRightTrack');
   }
 
   function startVerticalRoll(drops, trackId) {
-    const track = $(trackId);
-    if (!track || track.dataset.animating === 'true') return;
+    const track = $(trackId); if (!track || track.dataset.animating === 'true') return;
     track.dataset.animating = 'true';
-    
-    const WIN_INDEX = 20;
-    const TRACK_LEN = 40;
-    
-    // Заполняем трек
+    const WIN_INDEX = 20; const TRACK_LEN = 40;
     track.innerHTML = '';
     for (let i = 0; i < TRACK_LEN; i++) {
-      let item;
-      if (i === WIN_INDEX) {
-        item = drops[Math.floor(Math.random() * drops.length)];
-      } else {
-        item = makeItem(pickRandomRarity());
-      }
-      const div = document.createElement('div');
-      div.className = 'arena-v-item ' + item.rarity;
-      div.innerHTML = `
-        <span class="avi-icon">${item.icon}</span>
-        <span class="avi-name">${item.name}</span>
-        <span class="avi-price">${fmt(item.price)} ₽</span>
-      `;
+      let item = (i === WIN_INDEX) ? drops[Math.floor(Math.random() * drops.length)] : makeItem(pickRandomRarity());
+      const div = document.createElement('div'); div.className = 'arena-v-item ' + item.rarity;
+      div.innerHTML = `<span class="avi-icon">${item.icon}</span><span class="avi-name">${item.name}</span><span class="avi-price">${fmt(item.price)} ₽</span>`;
       track.appendChild(div);
     }
-
     requestAnimationFrame(() => {
-      const wrapH = track.parentElement.clientHeight;
-      const itemH = 60; // height: 60px в CSS
-      const winY = WIN_INDEX * itemH;
-      const jitter = rand(-itemH * 0.3, itemH * 0.3);
+      const wrapH = track.parentElement.clientHeight; const itemH = 60;
+      const winY = WIN_INDEX * itemH; const jitter = rand(-itemH * 0.3, itemH * 0.3);
       const finalY = -(winY + itemH / 2 - wrapH / 2) + jitter;
-      
-      track.style.transition = 'none';
-      track.style.transform = 'translateY(0px)';
-      void track.offsetWidth;
-      
-      const duration = 4000;
-      track.style.transition = `transform ${duration}ms cubic-bezier(0.15, 0.9, 0.25, 1)`;
+      track.style.transition = 'none'; track.style.transform = 'translateY(0px)'; void track.offsetWidth;
+      track.style.transition = `transform 4000ms cubic-bezier(0.15, 0.9, 0.25, 1)`;
       track.style.transform = `translateY(${finalY}px)`;
     });
   }
 
-  function checkArenaFinish() {
-    if (!arenaState) return;
-    // Если оба дропа пришли и анимации запущены, ждём конца
-    // Сервер пришлёт battle_finish через 4 сек
-  }
-
   function onBattleFinish(msg) {
     if (!arenaState || msg.battleId !== arenaState.battle.id) return;
-    
-    // Останавливаем анимации
     $('arenaStatus').textContent = 'Батл завершён!';
-    
     setTimeout(() => {
-      $('battleArena').classList.remove('show');
-      const iWon = msg.winnerId === state.playerId;
-      
-      // Обновляем инвентарь и баланс
-      if (iWon) {
-        // Победитель получает все предметы (сервер уже зачислил)
-        // Просто перерисовываем инвентарь
-        send({ type: 'get_state' }); // Если такой команды нет, можно просто подождать следующий 'state' от сервера
-      }
-
-      $('battleResultCard').style.setProperty('--rar', iWon ? '#fbbf24' : '#ff2d6f');
-      $('battleResultIcon').textContent = iWon ? '🏆' : '💀';
-      $('battleResultRar').textContent = iWon ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
-      $('battleResultRar').style.color = iWon ? '#fbbf24' : '#ff2d6f';
+      $('battleArena').classList.remove('show'); const iWon = msg.winnerId === state.playerId;
+      send({ type: 'get_state' }); // Обновляем инвентарь
+      $('battleResultCard').style.setProperty('--rar', iWon ? '#fbbf24' : '#ff2d6f'); $('battleResultIcon').textContent = iWon ? '🏆' : '💀';
+      $('battleResultRar').textContent = iWon ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ'; $('battleResultRar').style.color = iWon ? '#fbbf24' : '#ff2d6f';
       $('battleResultName').textContent = iWon ? 'Ты забираешь всё!' : 'Ты остался ни с чем';
       $('battleResultPrice').textContent = `Твой дроп: ${fmt(msg.creatorId === state.playerId ? msg.cSum : msg.jSum)} ₽ · Соперника: ${fmt(msg.creatorId === state.playerId ? msg.jSum : msg.cSum)} ₽`;
-      
-      $('battleResultOverlay').classList.add('show');
-      arenaState = null;
-      
-      // Разблокируем кнопки в батлах
+      $('battleResultOverlay').classList.add('show'); arenaState = null;
       document.querySelectorAll('.battle-item button').forEach(b => b.disabled = false);
-    }, 4200); // Ждём окончания анимации (4 сек) + запас
+    }, 4200);
   }
+  $('battleResultClose').addEventListener('click', () => { $('battleResultOverlay').classList.remove('show'); send({ type: 'get_state' }); });
 
-  $('battleResultClose').addEventListener('click', () => {
-    $('battleResultOverlay').classList.remove('show');
-    // Обновляем инвентарь на всякий случай
-    send({ type: 'get_state' });
-  });
+  $('logoBtn').addEventListener('click', () => { $('profileNick').textContent = state.nick || 'Ник'; $('profileBalance').textContent = fmt(state.balance) + ' ₽'; $('profileOverlay').classList.add('show'); });
+  $('profileClose').addEventListener('click', () => $('profileOverlay').classList.remove('show'));
+  $('earnBtn').addEventListener('click', () => send({ type: 'earn_money' }));
 
-  // ===== ПРОФИЛЬ =====
-  $('logoBtn').addEventListener('click', () => {
-    $('profileNick').textContent = state.nick || 'Ник';
-    $('profileBalance').textContent = fmt(state.balance) + ' ₽';
-    $('profileOverlay').classList.add('show');
-  });
-
-  $('profileClose').addEventListener('click', () => {
-    $('profileOverlay').classList.remove('show');
-  });
-
-  $('earnBtn').addEventListener('click', () => {
-    send({ type: 'earn_money' });
-  });
-
-  // ===== ЭКСПОРТ / ИМПОРТ =====
-  $('exportBtn').addEventListener('click', () => {
-    window.location.href = '/api/export';
-  });
+  $('exportBtn').addEventListener('click', () => window.location.href = '/api/export');
   $('importBtn').addEventListener('click', () => {
-    const inp = document.createElement('input');
-    inp.type = 'file';
-    inp.accept = '.json,application/json';
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
     inp.onchange = async () => {
-      const file = inp.files[0];
-      if (!file) return;
-      const text = await file.text();
-      try {
-        JSON.parse(text);
-      } catch {
-        alert('Битый JSON');
-        return;
-      }
+      const file = inp.files[0]; if (!file) return; const text = await file.text();
+      try { JSON.parse(text); } catch { alert('Битый JSON'); return; }
       if (!confirm('Импорт перезапишет ВСЁ состояние сервера. Продолжить?')) return;
-      const r = await fetch('/api/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: text
-      });
-      if (r.ok) {
-        alert('Импорт ок. Перезагрузи страницу.');
-        location.reload();
-      } else {
-        alert('Ошибка импорта');
-      }
+      const r = await fetch('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: text });
+      if (r.ok) { alert('Импорт ок. Перезагрузи страницу.'); location.reload(); } else { alert('Ошибка импорта'); }
     };
     inp.click();
   });
 
-  // ===== INIT =====
   connect();
 })();
 </script>
