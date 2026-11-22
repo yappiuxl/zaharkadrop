@@ -462,7 +462,6 @@
     $('balance').textContent = fmt(state.balance); 
     $('profileBalance').textContent = fmt(state.balance) + ' ₽'; 
     
-    // Профиль
     $('profileNick').textContent = state.nick || 'Ник';
     $('profileXpText').textContent = `${fmt(state.xp)} XP (Ур. ${state.lvl})`;
     
@@ -519,16 +518,21 @@
     });
     el.querySelectorAll('[data-open]').forEach(e => e.addEventListener('click', () => {
       if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.open);
-      if (!c || (state.balance < c.price && c.price > 0)) return; state.rolling = true; state.fastMode = false; updateCaseStates(); send({ type: 'open_case', caseIds: [c.id] });
+      if (!c || (state.balance < c.price && c.price > 0)) return; 
+      state.rolling = true; state.fastMode = false; state.lastMultiCaseIds = [c.id]; updateCaseStates(); 
+      send({ type: 'open_case', caseIds: [c.id] });
     }));
     el.querySelectorAll('[data-multi]').forEach(e => e.addEventListener('click', () => {
       if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.multi);
       if (!c || state.balance < c.price * 6) return;
-      state.rolling = true; state.fastMode = false; updateCaseStates(); send({ type: 'open_case', caseIds: Array(6).fill(c.id) });
+      state.rolling = true; state.fastMode = false; state.lastMultiCaseIds = Array(6).fill(c.id); updateCaseStates(); 
+      send({ type: 'open_case', caseIds: Array(6).fill(c.id) });
     }));
     el.querySelectorAll('[data-fast]').forEach(e => e.addEventListener('click', () => {
       if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.fast);
-      if (!c || state.balance < c.price) return; state.rolling = true; state.fastMode = true; updateCaseStates(); send({ type: 'open_case', caseIds: [c.id] });
+      if (!c || state.balance < c.price) return; 
+      state.rolling = true; state.fastMode = true; state.lastMultiCaseIds = [c.id]; updateCaseStates(); 
+      send({ type: 'open_case', caseIds: [c.id] });
     }));
     el.querySelectorAll('[data-info]').forEach(e => e.addEventListener('click', (ev) => {
       ev.stopPropagation(); const c = state.cases.find(x => x.id === e.dataset.info); if (c) showCaseInfo(c);
@@ -540,23 +544,27 @@
       if (c) el.classList.toggle('disabled', state.balance < c.price || state.rolling);
     });
   }
-  function makeItemFromCase(caseObj) {
-    if (!caseObj) {
+  function makeItemFromCase(caseId) {
+    const c = state.cases.find(x => x.id === caseId);
+    if (!c) {
       const base = ITEMS[Math.floor(Math.random() * ITEMS.length)]; 
       return { ...base, uid: Date.now() + Math.random() }; 
     }
-    if (caseObj.isFree) {
+    if (c.isFree) {
       if (Math.random() < 0.001) return { ...ITEMS[Math.floor(Math.random() * ITEMS.length)], uid: Date.now() + Math.random() };
       return { icon: '🕳️', name: 'Ничего', price: 0, uid: Date.now() + Math.random() };
     }
-    const item = caseObj.items[Math.floor(Math.random() * caseObj.items.length)];
+    const item = c.items[Math.floor(Math.random() * c.items.length)];
     return { ...item, uid: Date.now() + Math.random() };
   }
 
   function animateRollLocal(finalItem) {
-    const c = state.cases.find(x => x.id === state.lastMultiCaseIds?.[0] || x.id === 'hody');
+    const cid = state.lastMultiCaseIds ? state.lastMultiCaseIds[0] : 'hody';
     elTrack.innerHTML = ''; const items = [];
-    for (let i = 0; i < TRACK_LEN; i++) { if (i === WIN_INDEX) items.push(finalItem); else items.push(makeItemFromCase(c)); }
+    for (let i = 0; i < TRACK_LEN; i++) { 
+      if (i === WIN_INDEX) items.push(finalItem); 
+      else items.push(makeItemFromCase(cid)); 
+    }
     items.forEach(it => { const div = document.createElement('div'); div.className = 'item'; div.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>`; elTrack.appendChild(div); });
     requestAnimationFrame(() => {
       const wrapW = elTrack.parentElement.clientWidth; const first = elTrack.children[0];
@@ -821,11 +829,10 @@
     const WIN_INDEX = 20; const TRACK_LEN = 40;
     track.innerHTML = '';
     
-    // Берем предметы для анимации из первого кейса в батле
-    const c = state.cases.find(x => x.id === arenaState.battle.caseIds[0]) || state.cases[0];
+    const caseId = arenaState.battle.caseIds[0];
     
     for (let i = 0; i < TRACK_LEN; i++) {
-      let item = (i === WIN_INDEX) ? drops[Math.floor(Math.random() * drops.length)] : makeItemFromCase(c);
+      let item = (i === WIN_INDEX) ? drops[Math.floor(Math.random() * drops.length)] : makeItemFromCase(caseId);
       const div = document.createElement('div'); div.className = 'arena-v-item';
       div.innerHTML = `<span class="avi-icon">${item.icon}</span><span class="avi-name">${item.name}</span><span class="avi-price">${fmt(item.price)} ₽</span>`;
       track.appendChild(div);
@@ -909,4 +916,4 @@
 })();
 </script>
 </body>
- </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </html>
