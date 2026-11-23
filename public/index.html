@@ -213,6 +213,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="inv">Инвентарь</button>
     <button class="tab" data-tab="cases">Кейсы</button>
+    <button class="tab" data-tab="roulette">Рулетка</button>
     <button class="tab" data-tab="upg">Апгрейдер</button>
     <button class="tab" data-tab="battles">Батлы</button>
     <button class="tab" data-tab="tasks">Задания</button>
@@ -225,6 +226,13 @@
     <div class="view" id="viewCases">
       <div class="roulette-wrap"><div class="marker"></div><div class="track" id="track"></div></div>
       <div class="cases" id="cases"></div>
+    </div>
+    <div class="view" id="viewRoulette">
+      <div class="roulette-wrap"><div class="marker"></div><div class="track" id="rouTrack"></div></div>
+      <div style="display:flex;gap:8px;align-items:center;padding:4px 2px;">
+        <div style="font-size:12px;color:var(--dim);flex:1;">Выбери кейс и крути. Результат определяет сервер.</div>
+      </div>
+      <div class="cases" id="rouCases"></div>
     </div>
     <div class="view" id="viewUpg">
       <div class="upgrader">
@@ -401,7 +409,7 @@
   const fmtChance = (c) => { if (c == null) return '—'; const pct = c * 100; if (pct === 0) return '0.00%'; if (pct < 1) return pct.toFixed(2) + '%'; return pct.toFixed(1) + '%'; };
   const chanceColor = (chance) => { if (chance == null) return '#7a7a95'; if (chance === 0) return '#3a3a50'; const p = Math.max(0, Math.min(1, chance)); return `hsl(${p * 130}, 85%, 55%)`; };
 
-  const state = { playerId: localStorage.getItem('zd_pid'), nick: localStorage.getItem('zd_nick'), balance: 0, inventory: [], cases: [], battles: [], xp: 0, lvl: 1, rolling: false, upgSource: null, upgTarget: null, upgRolling: false, goldActive: false, pendingCaseDrop: null, pendingUpgDrop: null, lastMultiCaseIds: null };
+  const state = { playerId: localStorage.getItem('zd_pid'), nick: localStorage.getItem('zd_nick'), balance: 0, inventory: [], cases: [], battles: [], xp: 0, lvl: 1, rolling: false, upgSource: null, upgTarget: null, upgRolling: false, goldActive: false, pendingCaseDrop: null, pendingUpgDrop: null, lastMultiCaseIds: null, rouletteBusy: false };
   let ws = null;
 
   function connect() {
@@ -424,7 +432,12 @@
       case 'hello_ok':
         state.cases = msg.cases; state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.nick = msg.player.nick; state.xp = msg.player.xp; state.lvl = msg.player.lvl; renderAll(); break;
       case 'state':
-        state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.xp = msg.player.xp; state.lvl = msg.player.lvl; renderBalance(); renderInventory(); updateCaseStates(); break;
+        state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.xp = msg.player.xp; state.lvl = msg.player.lvl;
+        renderBalance(); renderInventory(); updateCaseStates();
+        if (typeof updateRouletteButtons === 'function') updateRouletteButtons();
+        break;
+      case 'roulette_spin':
+        playRouletteSpin(msg); break;
       case 'case_opened':
         if (msg.items.length === 1) {
           state.pendingCaseDrop = msg.items[0];
@@ -458,7 +471,7 @@
     return { text: 'НОВИЧОК', cls: '' };
   }
 
-  function renderAll() { renderBalance(); renderInventory(); renderCases(); renderUpgrader(); renderBattles(); updateCaseStates(); }
+  function renderAll() { renderBalance(); renderInventory(); renderCases(); renderRouletteCases(); renderUpgrader(); renderBattles(); updateCaseStates(); }
   function renderBalance() { 
     $('balance').textContent = fmt(state.balance); 
     $('profileBalance').textContent = fmt(state.balance) + ' ₽'; 
@@ -480,7 +493,7 @@
   
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-    const map = { inv: 'viewInv', cases: 'viewCases', upg: 'viewUpg', battles: 'viewBattles', tasks: 'viewTasks' };
+    const map = { inv: 'viewInv', cases: 'viewCases', roulette: 'viewRoulette', upg: 'viewUpg', battles: 'viewBattles', tasks: 'viewTasks' };
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === map[name]));
   }
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
@@ -539,6 +552,83 @@
       ev.stopPropagation(); const c = state.cases.find(x => x.id === e.dataset.info); if (c) showCaseInfo(c);
     }));
   }
+
+  const elRouTrack = $('rouTrack');
+  let rouletteRolling = false;
+
+  function renderRouletteCases() {
+    const el = $('rouCases');
+    if (!el) return;
+    el.innerHTML = '';
+    state.cases.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'case';
+      div.dataset.rid = c.id;
+      div.innerHTML = `
+        <div class="case-open" data-rspin="${c.id}">
+          <div class="case-icon">${c.icon}</div>
+          <div class="case-name">${c.name}</div>
+          <div class="case-price">${fmt(c.price)} ₽</div>
+        </div>
+      `;
+      el.appendChild(div);
+    });
+    el.querySelectorAll('[data-rspin]').forEach(e => e.addEventListener('click', () => {
+      if (rouletteRolling) return;
+      const c = state.cases.find(x => x.id === e.dataset.rspin);
+      if (!c) return;
+      if (state.balance < c.price) return;
+      rouletteRolling = true;
+      updateRouletteButtons();
+      send({ type: 'roulette_spin', caseId: c.id });
+    }));
+    updateRouletteButtons();
+  }
+
+  function updateRouletteButtons() {
+    document.querySelectorAll('#rouCases .case').forEach(el => {
+      const c = state.cases.find(x => x.id === el.dataset.rid);
+      if (c) el.classList.toggle('disabled', state.balance < c.price || rouletteRolling);
+    });
+  }
+
+  function playRouletteSpin(msg) {
+    const { strip, winIndex, duration, winItem } = msg;
+    elRouTrack.innerHTML = '';
+    strip.forEach(it => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>`;
+      elRouTrack.appendChild(div);
+    });
+
+    requestAnimationFrame(() => {
+      const wrapW = elRouTrack.parentElement.clientWidth;
+      const first = elRouTrack.children[0];
+      const rect = first.getBoundingClientRect();
+      const st = getComputedStyle(first);
+      const step = rect.width + (parseFloat(st.marginLeft) || 0) + (parseFloat(st.marginRight) || 0);
+      const winLeft = winIndex * step;
+      const jitter = rand(-step * 0.15, step * 0.15);
+      const finalX = -(winLeft + step / 2 - wrapW / 2) + jitter;
+
+      elRouTrack.style.transition = 'none';
+      elRouTrack.style.transform = 'translateX(0px)';
+      void elRouTrack.offsetWidth;
+
+      elRouTrack.style.transition = `transform ${duration}ms cubic-bezier(0.12, 0.8, 0.2, 1)`;
+      elRouTrack.style.transform = `translateX(${finalX}px)`;
+
+      setTimeout(() => {
+        rouletteRolling = false;
+        state.rouletteBusy = false;
+        updateRouletteButtons();
+        showWin(winItem);
+        renderInventory();
+      }, duration + 100);
+    });
+  }
+
   function updateCaseStates() {
     document.querySelectorAll('.case').forEach(el => {
       const c = state.cases.find(x => x.id === el.dataset.id);
@@ -583,7 +673,13 @@
   function showWin(item) {
     $('winIcon').textContent = item.icon; $('winRar').textContent = 'ВЫПАЛО'; $('winName').textContent = item.name; $('winPrice').textContent = fmt(item.price) + ' ₽'; $('overlay').classList.add('show');
   }
-  $('winClose').addEventListener('click', () => { $('overlay').classList.remove('show'); renderInventory(); updateCaseStates(); state.rolling = false; });
+  $('winClose').addEventListener('click', () => {
+    $('overlay').classList.remove('show');
+    renderInventory();
+    updateCaseStates();
+    updateRouletteButtons();
+    state.rolling = false;
+  });
 
   let lastMultiItems = [];
   function showMultiWin(items) {
@@ -719,203 +815,178 @@
   $('pickerClose').addEventListener('click', () => $('pickerOverlay').classList.remove('show'));
   $('targetPickerClose').addEventListener('click', () => $('targetPickerOverlay').classList.remove('show'));
   $('upgClear').addEventListener('click', () => { if (state.upgRolling) return; state.upgSource = null; state.upgTarget = null; state.goldActive = false; renderUpgrader(); });
-  
+
   function doUpgrade(isFast) {
     const source = findItemByUid(state.upgSource); const target = state.upgTarget;
-    if (!source || !target || state.upgRolling) return; const chance = calcChance(source, target); if (!chance) return;
-    state.upgRolling = true; state.fastMode = isFast; state.goldActive = false; $('upgGo').disabled = true; $('upgFast').disabled = true;
-    send({ type: 'upgrade', sourceUid: source.uid, target: { icon: target.icon, name: target.name, price: target.price, isPriceless: target.isPriceless } });
+    if (!source || !target || state.upgRolling) return;
+    state.upgRolling = true; state.fastMode = !!isFast;
+    $('upgGo').disabled = true; $('upgFast').disabled = true;
+    send({ type: 'upgrade', sourceUid: source.uid, target });
+  }
+  function spinUpgradeWheel(msg, instant) {
+    const { result, wonItem, chance, goldActive, target, source } = msg;
+    state.goldActive = !!goldActive;
+    renderUpgrader();
+    const g = wheelGeometry(chance, state.goldActive);
+    let targetAngle;
+    if (result === 'gold') targetAngle = g.goldStart + g.goldDeg / 2;
+    else if (result === 'win') targetAngle = g.winDeg * 0.15 + Math.random() * Math.max(1, g.winDeg * 0.5);
+    else targetAngle = g.winDeg + Math.random() * Math.max(1, (360 - g.winDeg) * 0.9);
+
+    const spin = 360 * 6 + (360 - targetAngle);
+    if (instant) {
+      elWheelSvg.style.transition = 'none';
+      elWheelSvg.style.transform = `rotate(${spin}deg)`;
+      finishUpgradeSpin(msg, true);
+    } else {
+      requestAnimationFrame(() => {
+        elWheelSvg.style.transition = 'transform 4200ms cubic-bezier(0.15, 0.85, 0.2, 1)';
+        elWheelSvg.style.transform = `rotate(${spin}deg)`;
+        setTimeout(() => finishUpgradeSpin(msg, false), 4300);
+      });
+    }
+  }
+  function finishUpgradeSpin(msg, instant) {
+    const { result, wonItem, target, source } = msg;
+    state.upgRolling = false;
+    state.goldActive = false;
+    state.upgSource = null;
+    state.upgTarget = null;
+    renderUpgrader();
+    const display = wonItem || target;
+    const isWin = result === 'win' || result === 'gold';
+    $('winIcon').textContent = display.icon;
+    $('winRar').textContent = result === 'gold' ? 'ЗОЛОТОЙ ДРОП' : (isWin ? 'АПГРЕЙД УДАЛСЯ' : 'АПГРЕЙД ПРОВАЛЕН');
+    $('winName').textContent = display.name;
+    $('winPrice').textContent = isWin ? '+' + fmt(display.price) + ' ₽' : '-' + fmt(source.price) + ' ₽';
+    $('overlay').classList.add('show');
+    renderInventory(); renderBalance();
   }
   $('upgGo').addEventListener('click', () => doUpgrade(false));
   $('upgFast').addEventListener('click', () => doUpgrade(true));
 
-  function spinUpgradeWheel(msg) {
-    const { result, chance, target, goldActive, source } = msg; state.goldActive = goldActive; renderWheel(chance, goldActive);
-    const g = wheelGeometry(chance, goldActive); let targetAngle;
-    if (result === 'gold') { targetAngle = rand(g.goldStart + 0.02 * g.goldDeg, g.goldEnd - 0.02 * g.goldDeg); if (g.goldDeg < 2) targetAngle = (g.goldStart + g.goldEnd) / 2; }
-    else if (result === 'win') {
-      const top = g.goldStart, bot = g.winDeg - g.goldEnd;
-      if (g.goldDeg > 0.1 && top + bot > 1) { const r = Math.random() * (top + bot); if (r < top) targetAngle = rand(0.02 * top, top - 0.02 * top); else targetAngle = rand(g.goldEnd + 0.02 * bot, g.winDeg - 0.02 * bot); }
-      else targetAngle = rand(0, g.winDeg * 0.98);
-    } else { const loseStart = g.winDeg, loseSize = 360 - loseStart; targetAngle = rand(loseStart + 0.02 * loseSize, 360 - 0.02 * loseSize); }
-    const turns = 4 + Math.floor(Math.random() * 3); const finalRotation = -targetAngle - turns * 360;
-    elWheelSvg.style.transition = 'none'; elWheelSvg.style.transform = 'rotate(0deg)'; void elWheelSvg.offsetWidth;
-    elWheelSvg.style.transition = 'transform 4000ms cubic-bezier(0.15, 0.9, 0.25, 1)'; elWheelSvg.style.transform = `rotate(${finalRotation}deg)`;
-    setTimeout(() => finishUpgradeSpin(msg, false), 4100);
-  }
-
-  function finishUpgradeSpin(msg, isFast) {
-    const { result, chance, target, source, wonItem } = msg;
-    state.upgRolling = false; state.goldActive = false; state.upgSource = null; state.upgTarget = null; renderUpgrader();
-    if (isFast) renderInventory();
-    if (result === 'gold') { $('winCard').style.setProperty('--rar', '#fbbf24'); $('winIcon').textContent = '🌟'; $('winRar').textContent = 'ЗОЛОТО! x2'; $('winRar').style.color = '#fbbf24'; $('winName').textContent = wonItem.icon + ' ' + wonItem.name; $('winPrice').textContent = 'Шанс ' + fmtChance(chance) + ' • цель ' + target.name; }
-    else if (result === 'win') { $('winIcon').textContent = '✅'; $('winRar').textContent = 'АПГРЕЙД УДАЛСЯ'; $('winName').textContent = wonItem.icon + ' ' + wonItem.name; $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
-    else { $('winCard').style.setProperty('--rar', '#ff2d6f'); $('winIcon').textContent = '💀'; $('winRar').textContent = 'ПРОВАЛ'; $('winRar').style.color = '#ff2d6f'; $('winName').textContent = 'Потерян: ' + (source ? source.icon + ' ' + source.name : 'предмет'); $('winPrice').textContent = 'Шанс был ' + fmtChance(chance); }
-    $('overlay').classList.add('show');
-  }
-
   // БАТЛЫ
-  let battleCaseSelection = [];
   function renderBattles() {
     const el = $('battlesList'); el.innerHTML = '';
-    if (state.battles.length === 0) { el.innerHTML = '<div class="empty">Открытых батлов нет.<br>Создай первый.</div>'; return; }
+    if (!state.battles.length) { el.innerHTML = '<div class="empty">Нет открытых батлов.</div>'; return; }
     state.battles.forEach(b => {
-      const div = document.createElement('div'); div.className = 'battle-item'; const isOwn = b.creatorNick === state.nick;
-      let titleClass = '';
-      if (b.creatorTitle === 'Millionare') titleClass = 'mill';
-      else if (b.creatorTitle === 'Pepe') titleClass = 'pepe';
-      else if (b.creatorTitle === 'True Zaharka') titleClass = 'true';
-
+      const div = document.createElement('div'); div.className = 'battle-item';
+      const mine = b.creatorId === state.playerId;
       div.innerHTML = `
-        <div class="bi-top">
-          <div class="bi-nick">
-            <span class="bi-title ${titleClass}">${b.creatorTitle || 'Новичок'}</span>
-            <span>${b.creatorNick}</span>
-          </div>
-          <div class="bi-price">${fmt(b.price)} ₽</div>
-        </div>
+        <div class="bi-top"><div class="bi-nick">${b.creatorNick}<span class="bi-title ${b.creatorTitle.toLowerCase()}">${b.creatorTitle}</span></div><div class="bi-price">${fmt(b.price)} ₽</div></div>
         <div class="bi-cases">${b.cases.map(c => `<span class="bi-case">${c.icon} ${c.name}</span>`).join('')}</div>
-        <div class="bi-actions">${isOwn ? `<button class="bi-cancel" data-cancel="${b.id}">Отменить (возврат)</button>` : `<button class="bi-join" data-join="${b.id}">Войти</button>`}</div>
+        <div class="bi-actions">${mine ? `<button class="bi-cancel" data-cancel="${b.id}">Отменить</button>` : `<button class="bi-join" data-join="${b.id}">Присоединиться</button>`}</div>
       `;
       el.appendChild(div);
     });
     el.querySelectorAll('[data-join]').forEach(e => e.addEventListener('click', () => send({ type: 'battle_join', battleId: e.dataset.join })));
     el.querySelectorAll('[data-cancel]').forEach(e => e.addEventListener('click', () => send({ type: 'battle_cancel', battleId: e.dataset.cancel })));
   }
-  $('battleCreateBtn').addEventListener('click', () => { battleCaseSelection = []; renderBattleCasePicker(); $('battleCreateOverlay').classList.add('show'); });
-  $('battleCreateClose').addEventListener('click', () => $('battleCreateOverlay').classList.remove('show'));
-  function renderBattleCasePicker() {
-    const el = $('battleCasePicker'); el.innerHTML = '';
-    state.cases.forEach(c => {
-      const div = document.createElement('div'); div.className = 'inv-item'; div.style.cursor = 'pointer'; const count = battleCaseSelection.filter(x => x === c.id).length;
-      div.innerHTML = `<div class="inv-icon">${c.icon}</div><div class="inv-info"><div class="inv-name">${c.name}</div></div><div style="font-weight:700;color:${count > 0 ? 'var(--accent)' : 'var(--dim)'};">${count > 0 ? '×' + count : '+'}</div>`;
-      div.addEventListener('click', () => { if (battleCaseSelection.length >= 20) return; battleCaseSelection.push(c.id); renderBattleCasePicker(); });
+  $('battleCreateBtn').addEventListener('click', () => {
+    const el = $('battleCasePicker'); el.innerHTML = ''; let selected = [];
+    state.cases.filter(c => c.id !== 'free').forEach(c => {
+      const div = document.createElement('div'); div.className = 'inv-item';
+      div.innerHTML = `<div class="inv-icon">${c.icon}</div><div class="inv-info"><div class="inv-name">${c.name}</div></div><div class="inv-price">${fmt(c.price)} ₽</div>`;
+      div.addEventListener('click', () => {
+        selected.push(c.id);
+        if (selected.length > 20) selected.shift();
+        $('battleTotal').textContent = fmt(selected.reduce((s, id) => s + state.cases.find(x => x.id === id).price, 0)) + ' ₽';
+        div.style.opacity = '0.6';
+      });
       el.appendChild(div);
     });
-    const total = battleCaseSelection.reduce((s, id) => { const c = state.cases.find(x => x.id === id); return s + (c ? c.price : 0); }, 0);
-    $('battleTotal').textContent = fmt(total) + ' ₽'; $('battleCreateSub').textContent = `Выбрано: ${battleCaseSelection.length}/20 · Баланс: ${fmt(state.balance)} ₽`;
-    $('battleCreateConfirm').disabled = battleCaseSelection.length === 0 || total > state.balance;
-    $('battleCreateConfirm').style.opacity = (battleCaseSelection.length === 0 || total > state.balance) ? '0.4' : '1';
-  }
-  $('battleCreateConfirm').addEventListener('click', () => {
-    const total = battleCaseSelection.reduce((s, id) => { const c = state.cases.find(x => x.id === id); return s + (c ? c.price : 0); }, 0);
-    if (battleCaseSelection.length === 0 || total > state.balance) return;
-    send({ type: 'battle_create', caseIds: battleCaseSelection }); $('battleCreateOverlay').classList.remove('show');
+    $('battleTotal').textContent = '0 ₽';
+    $('battleCreateConfirm').onclick = () => {
+      if (!selected.length) return;
+      send({ type: 'battle_create', caseIds: selected });
+      $('battleCreateOverlay').classList.remove('show');
+    };
+    $('battleCreateOverlay').classList.add('show');
   });
+  $('battleCreateClose').addEventListener('click', () => $('battleCreateOverlay').classList.remove('show'));
 
-  let arenaState = null;
+  let currentBattle = null;
   function startBattleArena(battle) {
-    document.querySelectorAll('.battle-item button').forEach(b => b.disabled = true);
-    $('battleArena').classList.add('show'); $('arenaStatus').textContent = 'Приготовьтесь!';
-    const isCreator = state.playerId === battle.creatorId; const myNick = isCreator ? battle.creatorNick : battle.joinerNick; const oppNick = isCreator ? battle.joinerNick : battle.creatorNick;
-    $('arenaLeftName').textContent = myNick + ' (ты)'; $('arenaRightName').textContent = oppNick;
-    $('arenaLeftTrack').innerHTML = ''; $('arenaRightTrack').innerHTML = '';
-    $('arenaLeftTrack').dataset.animating = 'false'; $('arenaRightTrack').dataset.animating = 'false';
-
-    arenaState = { battle, myId: state.playerId, myDrops: null, oppDrops: null };
-
-    let count = 5; const countEl = $('arenaCountdown'); countEl.style.display = 'flex'; countEl.textContent = count;
-    const timer = setInterval(() => {
-      count--;
-      if (count > 0) { countEl.textContent = count; countEl.style.animation = 'none'; void countEl.offsetWidth; countEl.style.animation = 'popIn 0.5s ease-out'; }
-      else {
-        clearInterval(timer); countEl.style.display = 'none'; $('arenaStatus').textContent = 'Крутим!';
-        send({ type: 'battle_roll', battleId: arenaState.battle.id });
-      }
+    currentBattle = battle;
+    $('battleArena').classList.add('show');
+    const isCreator = battle.creatorId === state.playerId;
+    const left = isCreator ? battle.creatorNick : battle.joinerNick;
+    const right = isCreator ? battle.joinerNick : battle.creatorNick;
+    $('arenaLeftName').textContent = left;
+    $('arenaRightName').textContent = right;
+    $('arenaLeftTrack').innerHTML = '';
+    $('arenaRightTrack').innerHTML = '';
+    $('arenaStatus').textContent = 'Крутка...';
+    const cd = $('arenaCountdown'); cd.style.display = 'flex'; let n = 5;
+    cd.textContent = n;
+    const iv = setInterval(() => {
+      n--;
+      if (n <= 0) { clearInterval(iv); cd.style.display = 'none'; }
+      else cd.textContent = n;
     }, 1000);
   }
-
   function onBattleProgress(msg) {
-    if (!arenaState || msg.battleId !== arenaState.battle.id) return;
-    const isMe = msg.playerId === state.playerId;
-    startVerticalRoll(msg.drops, isMe ? 'arenaLeftTrack' : 'arenaRightTrack');
-  }
-
-  function startVerticalRoll(drops, trackId) {
-    const track = $(trackId); if (!track || track.dataset.animating === 'true') return;
-    track.dataset.animating = 'true';
-    const WIN_INDEX = 20; const TRACK_LEN = 40;
+    if (!currentBattle || msg.battleId !== currentBattle.id) return;
+    const isCreator = currentBattle.creatorId === state.playerId;
+    const myId = state.playerId;
+    let side;
+    if (msg.playerId === currentBattle.creatorId) side = isCreator ? 'left' : 'right';
+    else side = isCreator ? 'right' : 'left';
+    const track = side === 'left' ? $('arenaLeftTrack') : $('arenaRightTrack');
     track.innerHTML = '';
-    
-    const caseId = arenaState.battle.caseIds[0];
-    
-    for (let i = 0; i < TRACK_LEN; i++) {
-      let item = (i === WIN_INDEX) ? drops[Math.floor(Math.random() * drops.length)] : makeItemFromCase(caseId);
+    msg.drops.forEach(d => {
       const div = document.createElement('div'); div.className = 'arena-v-item';
-      div.innerHTML = `<span class="avi-icon">${item.icon}</span><span class="avi-name">${item.name}</span><span class="avi-price">${fmt(item.price)} ₽</span>`;
+      div.innerHTML = `<div class="avi-icon">${d.icon}</div><div class="avi-name">${d.name}</div><div class="avi-price">${fmt(d.price)} ₽</div>`;
       track.appendChild(div);
-    }
-    requestAnimationFrame(() => {
-      const wrapH = track.parentElement.clientHeight; const itemH = 60;
-      const winY = WIN_INDEX * itemH; const jitter = rand(-itemH * 0.3, itemH * 0.3);
-      const finalY = -(winY + itemH / 2 - wrapH / 2) + jitter;
-      track.style.transition = 'none'; track.style.transform = 'translateY(0px)'; void track.offsetWidth;
-      track.style.transition = `transform 4000ms cubic-bezier(0.15, 0.9, 0.25, 1)`;
-      track.style.transform = `translateY(${finalY}px)`;
     });
   }
-
   function onBattleFinish(msg) {
-    if (!arenaState || msg.battleId !== arenaState.battle.id) return;
-    $('arenaStatus').textContent = 'Батл завершён!';
-    setTimeout(() => {
-      $('battleArena').classList.remove('show'); const iWon = msg.winnerId === state.playerId;
-      send({ type: 'get_state' });
-      $('battleResultCard').style.setProperty('--rar', iWon ? '#fbbf24' : '#ff2d6f'); $('battleResultIcon').textContent = iWon ? '🏆' : '💀';
-      $('battleResultRar').textContent = iWon ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ'; $('battleResultRar').style.color = iWon ? '#fbbf24' : '#ff2d6f';
-      $('battleResultName').textContent = iWon ? 'Ты забираешь всё!' : 'Ты остался ни с чем';
-      $('battleResultPrice').textContent = `Твой дроп: ${fmt(msg.creatorId === state.playerId ? msg.cSum : msg.jSum)} ₽ · Соперника: ${fmt(msg.creatorId === state.playerId ? msg.jSum : msg.cSum)} ₽`;
-      $('battleResultOverlay').classList.add('show'); arenaState = null;
-      document.querySelectorAll('.battle-item button').forEach(b => b.disabled = false);
-    }, 4200);
+    if (!currentBattle || msg.battleId !== currentBattle.id) return;
+    const win = msg.winnerId === state.playerId;
+    $('battleResultIcon').textContent = win ? '🏆' : '💀';
+    $('battleResultRar').textContent = win ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
+    $('battleResultName').textContent = win ? 'Ты забрал всё' : 'Ты проиграл';
+    $('battleResultPrice').textContent = `${fmt(msg.cSum)} ₽ vs ${fmt(msg.jSum)} ₽`;
+    $('battleResultOverlay').classList.add('show');
+    setTimeout(() => { $('battleArena').classList.remove('show'); currentBattle = null; }, 800);
   }
-  $('battleResultClose').addEventListener('click', () => { $('battleResultOverlay').classList.remove('show'); send({ type: 'get_state' }); });
+  $('battleResultClose').addEventListener('click', () => $('battleResultOverlay').classList.remove('show'));
 
   // ЗАДАНИЯ
-  let taskStartTime = parseInt(localStorage.getItem('zd_task_start')) || Date.now();
-  localStorage.setItem('zd_task_start', taskStartTime);
-  let dailyLastClaim = parseInt(localStorage.getItem('zd_daily_claim')) || 0;
-
-  setInterval(() => {
-    if (!state.playerId) return;
+  function tickTasks() {
     const now = Date.now();
-    const elapsedMin = Math.floor((now - taskStartTime) / 60000);
-
-    const rem10 = Math.max(0, 10 - elapsedMin);
-    $('timer10').textContent = `${Math.min(elapsedMin, 10)} / 10 мин`;
-    if (rem10 <= 0) { $('btn10').disabled = false; $('btn10').classList.add('ready'); } else { $('btn10').disabled = true; $('btn10').classList.remove('ready'); }
-
-    const rem30 = Math.max(0, 30 - elapsedMin);
-    $('timer30').textContent = `${Math.min(elapsedMin, 30)} / 30 мин`;
-    if (rem30 <= 0) { $('btn30').disabled = false; $('btn30').classList.add('ready'); } else { $('btn30').disabled = true; $('btn30').classList.remove('ready'); }
-
-    const rem60 = Math.max(0, 60 - elapsedMin);
-    $('timer60').textContent = `${Math.min(elapsedMin, 60)} / 60 мин`;
-    if (rem60 <= 0) { $('btn60').disabled = false; $('btn60').classList.add('ready'); } else { $('btn60').disabled = true; $('btn60').classList.remove('ready'); }
-  }, 1000);
-
-  $('btn10').addEventListener('click', () => send({ type: 'claim_task', taskId: '10m' }));
-  $('btn30').addEventListener('click', () => send({ type: 'claim_task', taskId: '30m' }));
-  $('btn60').addEventListener('click', () => send({ type: 'claim_task', taskId: '60m' }));
-  $('btnDaily').addEventListener('click', () => {
-    if (Date.now() - dailyLastClaim < 86400000) { alert('Ты уже забирал сегодня'); return; }
-    send({ type: 'claim_task', taskId: 'daily' });
-    dailyLastClaim = Date.now(); localStorage.setItem('zd_daily_claim', dailyLastClaim);
+    if (!state.sessionStart) state.sessionStart = now;
+    const mins = Math.floor((now - state.sessionStart) / 60000);
+    ['10', '30', '60'].forEach(m => {
+      const need = parseInt(m);
+      const el = $('timer' + m); const btn = $('btn' + m);
+      if (!el) return;
+      el.textContent = Math.min(mins, need) + ' / ' + need + ' мин';
+      if (mins >= need) { btn.disabled = false; btn.classList.add('ready'); }
+    });
+  }
+  setInterval(tickTasks, 10000);
+  ['10', '30', '60'].forEach(m => {
+    const btn = $('btn' + m);
+    if (btn) btn.addEventListener('click', () => { send({ type: 'claim_task', taskId: m + 'm' }); btn.disabled = true; btn.classList.remove('ready'); });
   });
+  $('btnDaily').addEventListener('click', () => { send({ type: 'claim_task', taskId: 'daily' }); });
 
-  $('logoBtn').addEventListener('click', () => { renderBalance(); $('profileOverlay').classList.add('show'); });
+  // ПРОФИЛЬ
+  $('logoBtn').addEventListener('click', () => $('profileOverlay').classList.add('show'));
   $('profileClose').addEventListener('click', () => $('profileOverlay').classList.remove('show'));
   $('earnBtn').addEventListener('click', () => send({ type: 'earn_money' }));
-
-  $('exportBtn').addEventListener('click', () => window.location.href = '/api/export');
+  $('exportBtn').addEventListener('click', () => { window.open('/api/export', '_blank'); });
   $('importBtn').addEventListener('click', () => {
-    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
-    inp.onchange = async () => {
-      const file = inp.files[0]; if (!file) return; const text = await file.text();
-      try { JSON.parse(text); } catch { alert('Битый JSON'); return; }
-      if (!confirm('Импорт перезапишет ВСЁ состояние сервера. Продолжить?')) return;
-      const r = await fetch('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: text });
-      if (r.ok) { alert('Импорт ок. Перезагрузи страницу.'); location.reload(); } else { alert('Ошибка импорта'); }
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
+    inp.onchange = () => {
+      const f = inp.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        fetch('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: rd.result })
+          .then(() => location.reload());
+      };
+      rd.readAsText(f);
     };
     inp.click();
   });
