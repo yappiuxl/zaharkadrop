@@ -18,9 +18,6 @@ const GOLD_MIN_RATIO = 0.8;
 const CHANCE_MIN = 0.0001;
 const CHANCE_MAX = 0.99;
 const BATTLE_TIMEOUT = 8000;
-const ROULETTE_SPIN_MIN = 4200;
-const ROULETTE_SPIN_MAX = 5200;
-const ROULETTE_COOLDOWN = 3000;
 
 // БАЗА ПРЕДМЕТОВ
 const ITEMS = [
@@ -95,7 +92,7 @@ const CASES = [
   { id: 'all', name: 'ВСЁ', icon: '🌌', price: 33367, desc: 'Все предметы', items: ITEMS.filter(i => !i.isPriceless), zaharkaChance: 1/25 }
 ];
 
-const state = { players: {}, battles: {}, roulette: {} };
+const state = { players: {}, battles: {} };
 
 function loadData() {
   try {
@@ -128,48 +125,6 @@ function rollCase(caseObj) {
     return { icon: '🕳️', name: 'Ничего', price: 0, uid: Date.now() + Math.random() };
   }
   return { ...pick(caseObj.items), uid: Date.now() + Math.random() };
-}
-
-// Лента для рулетки — детерминированно серверная, клиент только рисует.
-// Каждый элемент { icon, name, price, isWin }.
-function buildRouletteStrip(caseObj, winItem, length = 60, winIndex = 45) {
-  const pool = caseObj.isFree
-    ? ITEMS.filter(i => !i.isPriceless)
-    : (caseObj.items && caseObj.items.length ? caseObj.items : ITEMS.filter(i => !i.isPriceless));
-  const strip = [];
-  for (let i = 0; i < length; i++) {
-    if (i === winIndex) {
-      strip.push({ icon: winItem.icon, name: winItem.name, price: winItem.price, isWin: true });
-    } else {
-      const it = pick(pool);
-      strip.push({ icon: it.icon, name: it.name, price: it.price, isWin: false });
-    }
-  }
-  return strip;
-}
-
-function startRouletteSpin(ws, playerId, caseId) {
-  const p = getPlayer(playerId);
-  if (!p) return;
-  const caseObj = CASES.find(c => c.id === caseId);
-  if (!caseObj) return send(ws, { type: 'error', msg: 'case not found' });
-  if (p.balance < caseObj.price) return send(ws, { type: 'error', msg: 'no money' });
-  if (p.rouletteBusyUntil && Date.now() < p.rouletteBusyUntil) return send(ws, { type: 'error', msg: 'cooldown' });
-
-  p.balance -= caseObj.price;
-  const winItem = rollCase(caseObj);
-  p.inventory.push(winItem);
-  addXP(p, Math.floor(caseObj.price / 10));
-
-  const winIndex = 45;
-  const strip = buildRouletteStrip(caseObj, winItem, 60, winIndex);
-  const duration = Math.floor(ROULETTE_SPIN_MIN + Math.random() * (ROULETTE_SPIN_MAX - ROULETTE_SPIN_MIN));
-  p.rouletteBusyUntil = Date.now() + duration + ROULETTE_COOLDOWN;
-  state.roulette[playerId] = { caseId, winIndex, stripLen: strip.length, startedAt: Date.now(), duration };
-
-  sendStateTo(ws, playerId);
-  send(ws, { type: 'roulette_spin', caseId, strip, winIndex, duration, winItem });
-  saveData();
 }
 
 function calcChance(source, target) {
@@ -396,12 +351,6 @@ wss.on('connection', (ws) => {
       sendStateTo(ws, c.playerId);
       send(ws, { type: 'case_opened', items });
       saveData();
-      return;
-    }
-
-    if (msg.type === 'roulette_spin') {
-      if (!msg.caseId) return;
-      startRouletteSpin(ws, c.playerId, msg.caseId);
       return;
     }
 
