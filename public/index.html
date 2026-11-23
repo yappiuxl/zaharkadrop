@@ -329,11 +329,11 @@
     <button class="profile-btn accent big" id="earnBtn">Заработок +0.1 ₽</button>
     <button class="profile-btn" id="profileClose" style="margin-top: 10px; border-color: transparent; color: var(--dim);">Закрыть</button>
   </div>
-</div>
 
-<script>
+ <script>
 (() => {
   'use strict';
+
   const ITEMS = [
     { icon: '??',  name: 'Зевок',                price: 1   },
     { icon: '♟️', name: 'Пешка',                 price: 5   },
@@ -398,54 +398,148 @@
   const $ = id => document.getElementById(id);
   const rand = (a, b) => a + Math.random() * (b - a);
   const fmt = n => n.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
-  const fmtChance = (c) => { if (c == null) return '—'; const pct = c * 100; if (pct === 0) return '0.00%'; if (pct < 1) return pct.toFixed(2) + '%'; return pct.toFixed(1) + '%'; };
-  const chanceColor = (chance) => { if (chance == null) return '#7a7a95'; if (chance === 0) return '#3a3a50'; const p = Math.max(0, Math.min(1, chance)); return `hsl(${p * 130}, 85%, 55%)`; };
+  const fmtChance = c => {
+    if (c == null) return '—';
+    const pct = c * 100;
+    if (pct === 0) return '0.00%';
+    if (pct < 1) return pct.toFixed(2) + '%';
+    return pct.toFixed(1) + '%';
+  };
+  const chanceColor = chance => {
+    if (chance == null) return '#7a7a95';
+    if (chance === 0) return '#3a3a50';
+    const p = Math.max(0, Math.min(1, chance));
+    return `hsl(${p * 130}, 85%, 55%)`;
+  };
+  const normalizeAngle = a => ((a % 360) + 360) % 360;
 
-  const state = { playerId: localStorage.getItem('zd_pid'), nick: localStorage.getItem('zd_nick'), balance: 0, inventory: [], cases: [], battles: [], xp: 0, lvl: 1, rolling: false, upgSource: null, upgTarget: null, upgRolling: false, goldActive: false, pendingCaseDrop: null, pendingUpgDrop: null, lastMultiCaseIds: null };
+  const state = {
+    playerId: localStorage.getItem('zd_pid'),
+    nick: localStorage.getItem('zd_nick'),
+    balance: 0,
+    inventory: [],
+    cases: [],
+    battles: [],
+    xp: 0,
+    lvl: 1,
+    rolling: false,
+    fastMode: false,
+    upgSource: null,
+    upgTarget: null,
+    upgRolling: false,
+    goldActive: false,
+    pendingCaseDrop: null,
+    pendingUpgDrop: null,
+    lastMultiCaseIds: null,
+    wheelAngle: 0,
+    sessionStart: Date.now()
+  };
+
   let ws = null;
 
   function connect() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(proto + '//' + location.host);
+
     ws.onopen = () => {
       if (!state.playerId) state.playerId = crypto.randomUUID();
       localStorage.setItem('zd_pid', state.playerId);
-      if (!state.nick) { state.nick = prompt('Введи ник:') || 'Игрок' + Math.floor(Math.random() * 9999); localStorage.setItem('zd_nick', state.nick); }
+
+      if (!state.nick) {
+        state.nick = prompt('Введи ник:') || 'Игрок' + Math.floor(Math.random() * 9999);
+        localStorage.setItem('zd_nick', state.nick);
+      }
+
       ws.send(JSON.stringify({ type: 'hello', playerId: state.playerId, nick: state.nick }));
     };
-    ws.onmessage = (ev) => { let msg; try { msg = JSON.parse(ev.data); } catch { return; } handleMessage(msg); };
-    ws.onclose = () => { setTimeout(connect, 2000); };
+
+    ws.onmessage = ev => {
+      let msg;
+      try { msg = JSON.parse(ev.data); } catch { return; }
+      handleMessage(msg);
+    };
+
+    ws.onclose = () => setTimeout(connect, 2000);
     ws.onerror = () => {};
   }
-  function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+
+  function send(obj) {
+    if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
+  }
 
   function handleMessage(msg) {
     switch (msg.type) {
       case 'hello_ok':
-        state.cases = msg.cases; state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.nick = msg.player.nick; state.xp = msg.player.xp; state.lvl = msg.player.lvl; renderAll(); break;
+        state.cases = msg.cases;
+        state.balance = msg.player.balance;
+        state.inventory = msg.player.inventory;
+        state.nick = msg.player.nick;
+        state.xp = msg.player.xp;
+        state.lvl = msg.player.lvl;
+        renderAll();
+        break;
+
       case 'state':
-        state.balance = msg.player.balance; state.inventory = msg.player.inventory; state.xp = msg.player.xp; state.lvl = msg.player.lvl; renderBalance(); renderInventory(); updateCaseStates(); break;
+        state.balance = msg.player.balance;
+        state.inventory = msg.player.inventory;
+        state.xp = msg.player.xp;
+        state.lvl = msg.player.lvl;
+        renderBalance();
+        renderInventory();
+        updateCaseStates();
+        break;
+
       case 'case_opened':
         if (msg.items.length === 1) {
           state.pendingCaseDrop = msg.items[0];
-          if (state.fastMode) { showWin(state.pendingCaseDrop); state.fastMode = false; state.rolling = false; updateCaseStates(); }
-          else animateRollLocal(state.pendingCaseDrop);
+          if (state.fastMode) {
+            showWin(state.pendingCaseDrop);
+            state.fastMode = false;
+            state.rolling = false;
+            updateCaseStates();
+          } else {
+            animateRollLocal(state.pendingCaseDrop);
+          }
         } else {
           state.pendingCaseDrop = msg.items;
           showMultiWin(msg.items);
-          state.rolling = false; updateCaseStates();
+          state.rolling = false;
+          updateCaseStates();
         }
         break;
+
       case 'upgrade_result':
         state.pendingUpgDrop = msg;
-        if (state.fastMode) { finishUpgradeSpin(msg, true); state.fastMode = false; }
-        else spinUpgradeWheel(msg);
+        if (state.fastMode) {
+          finishUpgradeSpin(msg, true);
+          state.fastMode = false;
+        } else {
+          spinUpgradeWheel(msg);
+        }
         break;
-      case 'battles': state.battles = msg.battles; renderBattles(); break;
-      case 'battle_start': startBattleArena(msg.battle); break;
-      case 'battle_progress': onBattleProgress(msg); break;
-      case 'battle_finish': onBattleFinish(msg); break;
-      case 'task_reward': state.inventory.push(msg.item); renderInventory(); showWin(msg.item); break;
+
+      case 'battles':
+        state.battles = msg.battles;
+        renderBattles();
+        break;
+
+      case 'battle_start':
+        startBattleArena(msg.battle);
+        break;
+
+      case 'battle_progress':
+        onBattleProgress(msg);
+        break;
+
+      case 'battle_finish':
+        onBattleFinish(msg);
+        break;
+
+      case 'task_reward':
+        state.inventory.push(msg.item);
+        renderInventory();
+        showWin(msg.item);
+        break;
     }
   }
 
@@ -458,14 +552,21 @@
     return { text: 'НОВИЧОК', cls: '' };
   }
 
-  function renderAll() { renderBalance(); renderInventory(); renderCases(); renderUpgrader(); renderBattles(); updateCaseStates(); }
-  function renderBalance() { 
-    $('balance').textContent = fmt(state.balance); 
-    $('profileBalance').textContent = fmt(state.balance) + ' ₽'; 
-    
+  function renderAll() {
+    renderBalance();
+    renderInventory();
+    renderCases();
+    renderUpgrader();
+    renderBattles();
+    updateCaseStates();
+  }
+
+  function renderBalance() {
+    $('balance').textContent = fmt(state.balance);
+    $('profileBalance').textContent = fmt(state.balance) + ' ₽';
     $('profileNick').textContent = state.nick || 'Ник';
     $('profileXpText').textContent = `${fmt(state.xp)} XP (Ур. ${state.lvl})`;
-    
+
     const hasPepe = state.inventory.some(i => i.name === 'Пепе');
     const title = getTitleFromLevel(state.lvl, state.balance, hasPepe);
     const titleEl = $('profileTitle');
@@ -477,31 +578,54 @@
     const progress = Math.max(0, Math.min(100, ((state.xp - curLvlXP) / (nextLvlXP - curLvlXP)) * 100));
     $('profileXpFill').style.width = progress + '%';
   }
-  
+
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     const map = { inv: 'viewInv', cases: 'viewCases', upg: 'viewUpg', battles: 'viewBattles', tasks: 'viewTasks' };
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === map[name]));
   }
+
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
 
   function renderInventory() {
-    const el = $('inventory'); $('invCount').textContent = state.inventory.length + ' предметов'; el.innerHTML = '';
-    if (state.inventory.length === 0) { el.innerHTML = '<div class="empty">Пусто.<br>Открывай кейсы, Максим.</div>'; return; }
+    const el = $('inventory');
+    $('invCount').textContent = state.inventory.length + ' предметов';
+    el.innerHTML = '';
+
+    if (state.inventory.length === 0) {
+      el.innerHTML = '<div class="empty">Пусто.<br>Открывай кейсы, Максим.</div>';
+      return;
+    }
+
     [...state.inventory].reverse().forEach(item => {
-      const div = document.createElement('div'); div.className = 'inv-item';
-      div.innerHTML = `<div class="inv-icon">${item.icon}</div><div class="inv-info"><div class="inv-name">${item.name}</div></div><div class="inv-price">${fmt(item.price)} ₽</div>`;
+      const div = document.createElement('div');
+      div.className = 'inv-item';
+      div.innerHTML = `
+        <div class="inv-icon">${item.icon}</div>
+        <div class="inv-info"><div class="inv-name">${item.name}</div></div>
+        <div class="inv-price">${fmt(item.price)} ₽</div>
+      `;
       div.addEventListener('click', () => send({ type: 'sell_item', uid: item.uid }));
       el.appendChild(div);
     });
   }
-  $('sellAll').addEventListener('click', () => { if (state.inventory.length > 0) send({ type: 'sell_all' }); });
 
-  const elTrack = $('track'); const WIN_INDEX = 50; const TRACK_LEN = 60;
+  $('sellAll').addEventListener('click', () => {
+    if (state.inventory.length > 0) send({ type: 'sell_all' });
+  });
+
+  const elTrack = $('track');
+  const WIN_INDEX = 50;
+  const TRACK_LEN = 60;
+
   function renderCases() {
-    const el = $('cases'); el.innerHTML = '';
+    const el = $('cases');
+    el.innerHTML = '';
+
     state.cases.forEach(c => {
-      const div = document.createElement('div'); div.className = 'case'; div.dataset.id = c.id;
+      const div = document.createElement('div');
+      div.className = 'case';
+      div.dataset.id = c.id;
       div.innerHTML = `
         <button class="case-info-btn" data-info="${c.id}"></button>
         <div class="case-open" data-open="${c.id}">
@@ -517,78 +641,125 @@
       `;
       el.appendChild(div);
     });
+
     el.querySelectorAll('[data-open]').forEach(e => e.addEventListener('click', () => {
-      if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.open);
-      if (!c || (state.balance < c.price && c.price > 0)) return; 
-      state.rolling = true; state.fastMode = false; state.lastMultiCaseIds = [c.id]; updateCaseStates(); 
+      if (state.rolling) return;
+      const c = state.cases.find(x => x.id === e.dataset.open);
+      if (!c || (state.balance < c.price && c.price > 0)) return;
+      state.rolling = true;
+      state.fastMode = false;
+      state.lastMultiCaseIds = [c.id];
+      updateCaseStates();
       send({ type: 'open_case', caseIds: [c.id] });
     }));
+
     el.querySelectorAll('[data-multi]').forEach(e => e.addEventListener('click', () => {
-      if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.multi);
+      if (state.rolling) return;
+      const c = state.cases.find(x => x.id === e.dataset.multi);
       if (!c || state.balance < c.price * 6) return;
-      state.rolling = true; state.fastMode = false; state.lastMultiCaseIds = Array(6).fill(c.id); updateCaseStates(); 
+      state.rolling = true;
+      state.fastMode = false;
+      state.lastMultiCaseIds = Array(6).fill(c.id);
+      updateCaseStates();
       send({ type: 'open_case', caseIds: Array(6).fill(c.id) });
     }));
+
     el.querySelectorAll('[data-fast]').forEach(e => e.addEventListener('click', () => {
-      if (state.rolling) return; const c = state.cases.find(x => x.id === e.dataset.fast);
-      if (!c || state.balance < c.price) return; 
-      state.rolling = true; state.fastMode = true; state.lastMultiCaseIds = [c.id]; updateCaseStates(); 
+      if (state.rolling) return;
+      const c = state.cases.find(x => x.id === e.dataset.fast);
+      if (!c || state.balance < c.price) return;
+      state.rolling = true;
+      state.fastMode = true;
+      state.lastMultiCaseIds = [c.id];
+      updateCaseStates();
       send({ type: 'open_case', caseIds: [c.id] });
     }));
-    el.querySelectorAll('[data-info]').forEach(e => e.addEventListener('click', (ev) => {
-      ev.stopPropagation(); const c = state.cases.find(x => x.id === e.dataset.info); if (c) showCaseInfo(c);
+
+    el.querySelectorAll('[data-info]').forEach(e => e.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const c = state.cases.find(x => x.id === e.dataset.info);
+      if (c) showCaseInfo(c);
     }));
   }
+
   function updateCaseStates() {
     document.querySelectorAll('.case').forEach(el => {
       const c = state.cases.find(x => x.id === el.dataset.id);
       if (c) el.classList.toggle('disabled', state.balance < c.price || state.rolling);
     });
   }
+
   function makeItemFromCase(caseId) {
     const c = state.cases.find(x => x.id === caseId);
     if (!c) {
-      const base = ITEMS[Math.floor(Math.random() * ITEMS.length)]; 
-      return { ...base, uid: Date.now() + Math.random() }; 
+      const base = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+      return { ...base, uid: Date.now() + Math.random() };
     }
+
     if (c.isFree) {
-      if (Math.random() < 0.001) return { ...ITEMS[Math.floor(Math.random() * ITEMS.length)], uid: Date.now() + Math.random() };
+      if (Math.random() < 0.001) {
+        return { ...ITEMS[Math.floor(Math.random() * ITEMS.length)], uid: Date.now() + Math.random() };
+      }
       return { icon: '🕳️', name: 'Ничего', price: 0, uid: Date.now() + Math.random() };
     }
+
     const item = c.items[Math.floor(Math.random() * c.items.length)];
     return { ...item, uid: Date.now() + Math.random() };
   }
 
-  function animateRollLocal(finalItem) {
-    const cid = state.lastMultiCaseIds ? state.lastMultiCaseIds[0] : 'hody';
+  function buildRouletteStrip(finalItem, caseId) {
     elTrack.innerHTML = '';
     const items = [];
+
     for (let i = 0; i < TRACK_LEN; i++) {
-      if (i === WIN_INDEX) items.push(finalItem);
-      else items.push(makeItemFromCase(cid));
+      items.push(i === WIN_INDEX ? finalItem : makeItemFromCase(caseId));
     }
+
     items.forEach(it => {
       const div = document.createElement('div');
       div.className = 'item';
       div.innerHTML = `<div class="icon">${it.icon}</div><div class="name">${it.name}</div>`;
       elTrack.appendChild(div);
     });
+  }
 
-    // Ждём два кадра, чтобы элементы получили реальные размеры (фикс рулетки)
+  function animateRollLocal(finalItem) {
+    const cid = state.lastMultiCaseIds ? state.lastMultiCaseIds[0] : 'hody';
+    buildRouletteStrip(finalItem, cid);
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const first = elTrack.children[0];
-        if (!first) { state.rolling = false; updateCaseStates(); showWin(finalItem); return; }
+        const winEl = elTrack.children[WIN_INDEX];
 
-        const wrapW = elTrack.parentElement.clientWidth;
-        const rect = first.getBoundingClientRect();
-        const st = getComputedStyle(first);
-        const step = rect.width + (parseFloat(st.marginLeft) || 0) + (parseFloat(st.marginRight) || 0);
-        if (step <= 0) { state.rolling = false; updateCaseStates(); showWin(finalItem); return; }
+        if (!first || !winEl) {
+          state.rolling = false;
+          updateCaseStates();
+          showWin(finalItem);
+          return;
+        }
 
-        const winLeft = WIN_INDEX * step;
-        const jitter = rand(-step * 0.15, step * 0.15);
-        const finalX = -(winLeft + step / 2 - wrapW / 2) + jitter;
+        const wrap = elTrack.parentElement;
+        const wrapW = wrap.clientWidth;
+        const firstRect = first.getBoundingClientRect();
+        const winRect = winEl.getBoundingClientRect();
+        const firstStyle = getComputedStyle(first);
+
+        const marginLeft = parseFloat(firstStyle.marginLeft) || 0;
+        const marginRight = parseFloat(firstStyle.marginRight) || 0;
+        const step = firstRect.width + marginLeft + marginRight;
+
+        if (step <= 0) {
+          state.rolling = false;
+          updateCaseStates();
+          showWin(finalItem);
+          return;
+        }
+
+        const winCenter = winRect.left + winRect.width / 2;
+        const wrapCenter = wrap.getBoundingClientRect().left + wrapW / 2;
+        const currentX = winCenter - wrapCenter;
+        const finalX = -currentX;
 
         elTrack.style.transition = 'none';
         elTrack.style.transform = 'translateX(0px)';
@@ -606,118 +777,296 @@
       });
     });
   }
+
   function showWin(item) {
-    $('winIcon').textContent = item.icon; $('winRar').textContent = 'ВЫПАЛО'; $('winName').textContent = item.name; $('winPrice').textContent = fmt(item.price) + ' ₽'; $('overlay').classList.add('show');
+    $('winIcon').textContent = item.icon;
+    $('winRar').textContent = 'ВЫПАЛО';
+    $('winName').textContent = item.name;
+    $('winPrice').textContent = fmt(item.price) + ' ₽';
+    $('overlay').classList.add('show');
+    renderBalance();
+    renderInventory();
   }
+
   $('winClose').addEventListener('click', () => {
     $('overlay').classList.remove('show');
-    state.upgSource = null;
-    state.upgTarget = null;
     state.rolling = false;
-    renderUpgrader();
-    renderInventory();
     updateCaseStates();
   });
 
   let lastMultiItems = [];
+
   function showMultiWin(items) {
     lastMultiItems = items;
-    const grid = $('multiGrid'); grid.innerHTML = '';
+    const grid = $('multiGrid');
+    grid.innerHTML = '';
     let totalSum = 0;
+
     items.forEach(it => {
       totalSum += it.price;
-      const div = document.createElement('div'); div.className = 'multi-item';
-      div.innerHTML = `<div class="mi-icon">${it.icon}</div><div class="mi-name">${it.name}</div><div class="mi-price">${fmt(it.price)} ₽</div><button class="mi-sell">Продать</button>`;
-      div.querySelector('.mi-sell').addEventListener('click', () => { send({ type: 'sell_many', uids: [it.uid] }); div.style.opacity = '0.3'; div.querySelector('.mi-sell').disabled = true; });
+      const div = document.createElement('div');
+      div.className = 'multi-item';
+      div.innerHTML = `
+        <div class="mi-icon">${it.icon}</div>
+        <div class="mi-name">${it.name}</div>
+        <div class="mi-price">${fmt(it.price)} ₽</div>
+        <button class="mi-sell">Продать</button>
+      `;
+      div.querySelector('.mi-sell').addEventListener('click', () => {
+        send({ type: 'sell_many', uids: [it.uid] });
+        div.style.opacity = '0.3';
+        div.querySelector('.mi-sell').disabled = true;
+      });
       grid.appendChild(div);
     });
+
     $('multiOpenMore').textContent = `Открыть ещё 6 (${fmt(totalSum)} ₽)`;
     $('multiSellAll').textContent = `Продать всё (${fmt(totalSum)} ₽)`;
     $('multiOverlay').classList.add('show');
   }
+
   $('multiSellAll').addEventListener('click', () => {
     const uids = lastMultiItems.map(i => i.uid);
     send({ type: 'sell_many', uids });
-    $('multiOverlay').classList.remove('show'); renderInventory(); state.rolling = false; updateCaseStates();
+    $('multiOverlay').classList.remove('show');
+    renderInventory();
+    state.rolling = false;
+    updateCaseStates();
   });
+
   $('multiOpenMore').addEventListener('click', () => {
     $('multiOverlay').classList.remove('show');
-    state.rolling = true; updateCaseStates(); send({ type: 'open_case', caseIds: state.lastMultiCaseIds });
+    state.rolling = true;
+    updateCaseStates();
+    send({ type: 'open_case', caseIds: state.lastMultiCaseIds });
   });
 
   function showCaseInfo(c) {
-    $('infoTitle').textContent = c.icon + ' ' + c.name; $('infoSub').textContent = 'Цена: ' + fmt(c.price) + ' ₽'; $('infoList').innerHTML = '';
-    const itemsList = c.id === 'free' ? [{icon: '🕳️', name: 'Ничего', price: 0}, ...ITEMS] : c.items;
+    $('infoTitle').textContent = c.icon + ' ' + c.name;
+    $('infoSub').textContent = 'Цена: ' + fmt(c.price) + ' ₽';
+    $('infoList').innerHTML = '';
+
+    const itemsList = c.id === 'free'
+      ? [{ icon: '🕳️', name: 'Ничего', price: 0 }, ...ITEMS]
+      : c.items;
+
     const chance = 1 / itemsList.length;
+
     if (c.id === 'free') {
-      const header = document.createElement('div'); header.style.cssText = 'font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);font-weight:700;margin:8px 2px 2px;'; header.textContent = '99.9% на Ничего'; $('infoList').appendChild(header);
+      const header = document.createElement('div');
+      header.style.cssText = 'font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);font-weight:700;margin:8px 2px 2px;';
+      header.textContent = '99.9% на Ничего';
+      $('infoList').appendChild(header);
     }
-    itemsList.forEach(it => { const row = document.createElement('div'); row.className = 'info-row'; row.innerHTML = `<div class="ir-icon">${it.icon}</div><div class="ir-name">${it.name}</div><div class="ir-price">${fmt(it.price)} ₽</div><div class="ir-chance" style="color:var(--dim);font-size:12px;font-weight:700;">${fmtChance(chance)}</div>`; $('infoList').appendChild(row); });
+
+    itemsList.forEach(it => {
+      const row = document.createElement('div');
+      row.className = 'info-row';
+      row.innerHTML = `
+        <div class="ir-icon">${it.icon}</div>
+        <div class="ir-name">${it.name}</div>
+        <div class="ir-price">${fmt(it.price)} ₽</div>
+        <div class="ir-chance" style="color:var(--dim);font-size:12px;font-weight:700;">${fmtChance(chance)}</div>
+      `;
+      $('infoList').appendChild(row);
+    });
+
     $('infoOverlay').classList.add('show');
   }
+
   $('infoClose').addEventListener('click', () => $('infoOverlay').classList.remove('show'));
 
-  function findItemByUid(uid) { return state.inventory.find(i => i.uid === uid) || null; }
+  function findItemByUid(uid) {
+    return state.inventory.find(i => i.uid === uid) || null;
+  }
+
   function getTargets(source) {
-    if (!source) return []; const list = [];
-    ITEMS.forEach(it => { if (it.price > source.price) list.push({ ...it }); });
-    list.sort((a, b) => a.price - b.price); return list;
+    if (!source) return [];
+    const list = [];
+    ITEMS.forEach(it => {
+      if (it.price > source.price) list.push({ ...it });
+    });
+    list.sort((a, b) => a.price - b.price);
+    return list;
   }
-  function calcChance(source, target) { 
-    if (!source || !target) return null; 
+
+  function calcChance(source, target) {
+    if (!source || !target) return null;
     if (target.isPriceless) return 0.0001;
-    const mult = target.price / source.price; 
-    let chance = (1 / mult); 
-    if (chance < 0.0001) return 0; 
-    return Math.min(0.99, chance); 
+    const mult = target.price / source.price;
+    let chance = 1 / mult;
+    if (chance < 0.0001) return 0;
+    return Math.min(0.99, chance);
   }
-  const WHEEL_R = 48, WHEEL_C = 50; const GOLD_CHANCE = 0.4, GOLD_SIZE = 0.10, GOLD_MIN_RATIO = 0.8;
-  function polarToXY(angleDeg, r) { const a = (angleDeg - 90) * Math.PI / 180; return { x: WHEEL_C + r * Math.cos(a), y: WHEEL_C + r * Math.sin(a) }; }
-  function arcPath(s, e, r) { const st = polarToXY(s, r), en = polarToXY(e, r); const large = (e - s) > 180 ? 1 : 0; return `M ${WHEEL_C} ${WHEEL_C} L ${st.x} ${st.y} A ${r} ${r} 0 ${large} 1 ${en.x} ${en.y} Z`; }
+
+  const WHEEL_R = 48;
+  const WHEEL_C = 50;
+  const GOLD_CHANCE = 0.4;
+  const GOLD_SIZE = 0.10;
+  const GOLD_MIN_RATIO = 0.8;
+
+  function polarToXY(angleDeg, r) {
+    const a = (angleDeg - 90) * Math.PI / 180;
+    return {
+      x: WHEEL_C + r * Math.cos(a),
+      y: WHEEL_C + r * Math.sin(a)
+    };
+  }
+
+  function arcPath(s, e, r) {
+    const st = polarToXY(s, r);
+    const en = polarToXY(e, r);
+    const large = (e - s) > 180 ? 1 : 0;
+    return `M ${WHEEL_C} ${WHEEL_C} L ${st.x} ${st.y} A ${r} ${r} 0 ${large} 1 ${en.x} ${en.y} Z`;
+  }
+
   function wheelGeometry(chance, goldActive) {
-    const p = chance == null ? 0.5 : Math.max(0, Math.min(0.99, chance)); const winDeg = p * 360; let goldDeg = 0;
-    if (goldActive && chance != null && p > 0) { if (winDeg <= GOLD_SIZE * 360) goldDeg = winDeg * GOLD_MIN_RATIO; else goldDeg = GOLD_SIZE * 360; goldDeg = Math.min(goldDeg, winDeg); }
-    const goldStart = (winDeg - goldDeg) / 2; return { winDeg, goldDeg, goldStart, goldEnd: goldStart + goldDeg };
-  }
-  const elWheelSvg = $('wheelSvg');
-  function renderWheel(chance, goldActive) {
-    elWheelSvg.innerHTML = ''; const g = wheelGeometry(chance, goldActive);
-    function seg(s, e, cls) { if (e - s < 0.1) return; const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', arcPath(s, e, WHEEL_R)); p.setAttribute('class', cls); elWheelSvg.appendChild(p); }
-    seg(0, g.goldStart, 'seg-win'); seg(g.goldStart, g.goldEnd, 'seg-gold'); seg(g.goldEnd, g.winDeg, 'seg-win'); seg(g.winDeg, 360, 'seg-lose');
-    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); ring.setAttribute('cx', WHEEL_C); ring.setAttribute('cy', WHEEL_C); ring.setAttribute('r', WHEEL_R); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', 'rgba(0,0,0,0.4)'); ring.setAttribute('stroke-width', '1'); elWheelSvg.appendChild(ring);
-  }
-  function setWheelInfo(chance) {
-    const chVal = $('upgChanceValue'), chMult = $('upgMult');
-    if (chance == null) { chVal.textContent = '—'; chVal.style.color = 'var(--dim)'; chMult.textContent = 'x0'; return; }
-    if (chance === 0) { chVal.textContent = '0.00%'; chVal.style.color = chanceColor(0); chMult.textContent = '∞'; return; }
-    chVal.textContent = fmtChance(chance); chVal.style.color = chanceColor(chance); chMult.textContent = 'x' + (1 / chance).toFixed(2);
-  }
-  function renderUpgrader() {
-    const source = findItemByUid(state.upgSource); const target = state.upgTarget;
-    const srcEl = $('upgSourceSlot'); srcEl.className = 'upg-slot';
-    if (source) { srcEl.classList.add('filled'); srcEl.innerHTML = `<div class="slot-icon">${source.icon}</div><div class="slot-name">${source.name}</div><div class="slot-price">${fmt(source.price)} ₽</div>`; } else { srcEl.innerHTML = `<div class="slot-empty">+</div><div class="slot-hint">Ставка</div>`; }
-    srcEl.onclick = () => { if (!state.upgRolling) openPicker(); };
-    const tgtEl = $('upgTargetSlot'); tgtEl.className = 'upg-slot';
-    if (target) {
-      tgtEl.classList.add('filled'); tgtEl.innerHTML = `<div class="slot-icon">${target.icon}</div><div class="slot-name">${target.name}</div><div class="slot-price">${fmt(target.price)} ₽</div>`;
-      tgtEl.onclick = () => { if (state.upgRolling) return; state.upgTarget = null; renderUpgrader(); };
-    } else {
-      tgtEl.innerHTML = `<div class="slot-empty">?</div><div class="slot-hint">Цель</div>`;
-      tgtEl.onclick = () => { if (state.upgRolling) return; if (!source) { openPicker(); return; } openTargetPicker(); };
+    const p = chance == null ? 0.5 : Math.max(0, Math.min(0.99, chance));
+    const winDeg = p * 360;
+    let goldDeg = 0;
+
+    if (goldActive && chance != null && p > 0) {
+      if (winDeg <= GOLD_SIZE * 360) goldDeg = winDeg * GOLD_MIN_RATIO;
+      else goldDeg = GOLD_SIZE * 360;
+      goldDeg = Math.min(goldDeg, winDeg);
     }
-    const chance = calcChance(source, target); renderWheel(chance, state.goldActive && state.upgRolling); setWheelInfo(chance);
-    const btnGo = $('upgGo'), btnFast = $('upgFast');
+
+    const goldStart = (winDeg - goldDeg) / 2;
+    return {
+      winDeg,
+      goldDeg,
+      goldStart,
+      goldEnd: goldStart + goldDeg
+    };
+  }
+
+  const elWheelSvg = $('wheelSvg');
+
+  function renderWheel(chance, goldActive) {
+    elWheelSvg.innerHTML = '';
+    const g = wheelGeometry(chance, goldActive);
+
+    function seg(s, e, cls) {
+      if (e - s < 0.1) return;
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', arcPath(s, e, WHEEL_R));
+      p.setAttribute('class', cls);
+      elWheelSvg.appendChild(p);
+    }
+
+    seg(0, g.goldStart, 'seg-win');
+    seg(g.goldStart, g.goldEnd, 'seg-gold');
+    seg(g.goldEnd, g.winDeg, 'seg-win');
+    seg(g.winDeg, 360, 'seg-lose');
+
+    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    ring.setAttribute('cx', WHEEL_C);
+    ring.setAttribute('cy', WHEEL_C);
+    ring.setAttribute('r', WHEEL_R);
+    ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', 'rgba(0,0,0,0.4)');
+    ring.setAttribute('stroke-width', '1');
+    elWheelSvg.appendChild(ring);
+  }
+
+  function setWheelInfo(chance) {
+    const chVal = $('upgChanceValue');
+    const chMult = $('upgMult');
+
+    if (chance == null) {
+      chVal.textContent = '—';
+      chVal.style.color = 'var(--dim)';
+      chMult.textContent = 'x0';
+      return;
+    }
+
+    if (chance === 0) {
+      chVal.textContent = '0.00%';
+      chVal.style.color = chanceColor(0);
+      chMult.textContent = '∞';
+      return;
+    }
+
+    chVal.textContent = fmtChance(chance);
+    chVal.style.color = chanceColor(chance);
+    chMult.textContent = 'x' + (1 / chance).toFixed(2);
+  }
+
+  function renderUpgrader() {
+    const source = findItemByUid(state.upgSource);
+    const target = state.upgTarget;
+
+    const srcEl = $('upgSourceSlot');
+    srcEl.className = 'upg-slot';
+
+    if (source) {
+      srcEl.classList.add('filled');
+      srcEl.innerHTML = `
+        <div class="slot-icon">${source.icon}</div>
+        <div class="slot-name">${source.name}</div>
+        <div class="slot-price">${fmt(source.price)} ₽</div>
+      `;
+    } else {
+      srcEl.innerHTML = `
+        <div class="slot-empty">+</div>
+        <div class="slot-hint">Ставка</div>
+      `;
+    }
+
+    srcEl.onclick = () => {
+      if (!state.upgRolling) openPicker();
+    };
+
+    const tgtEl = $('upgTargetSlot');
+    tgtEl.className = 'upg-slot';
+
+    if (target) {
+      tgtEl.classList.add('filled');
+      tgtEl.innerHTML = `
+        <div class="slot-icon">${target.icon}</div>
+        <div class="slot-name">${target.name}</div>
+        <div class="slot-price">${fmt(target.price)} ₽</div>
+      `;
+      tgtEl.onclick = () => {
+        if (state.upgRolling) return;
+        state.upgTarget = null;
+        renderUpgrader();
+      };
+    } else {
+      tgtEl.innerHTML = `
+        <div class="slot-empty">?</div>
+        <div class="slot-hint">Цель</div>
+      `;
+      tgtEl.onclick = () => {
+        if (state.upgRolling) return;
+        if (!source) {
+          openPicker();
+          return;
+        }
+        openTargetPicker();
+      };
+    }
+
+    const chance = calcChance(source, target);
+    renderWheel(chance, state.goldActive && state.upgRolling);
+    setWheelInfo(chance);
+
+    const btnGo = $('upgGo');
+    const btnFast = $('upgFast');
     btnGo.disabled = !(source && target) || state.upgRolling || chance === 0;
     btnFast.disabled = btnGo.disabled;
   }
-  
+
   document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const source = findItemByUid(state.upgSource); if (!source) return;
+      const source = findItemByUid(state.upgSource);
+      if (!source) return;
+
       const mult = btn.dataset.mult ? parseFloat(btn.dataset.mult) : null;
       const chance = btn.dataset.chance ? parseFloat(btn.dataset.chance) / 100 : null;
-      let wantedPrice = mult ? source.price * mult : source.price / chance;
-      let all = [...ITEMS];
+      const wantedPrice = mult ? source.price * mult : source.price / chance;
+
+      const all = [...ITEMS];
       all.sort((a, b) => Math.abs(a.price - wantedPrice) - Math.abs(b.price - wantedPrice));
       state.upgTarget = all[0];
       renderUpgrader();
@@ -725,64 +1074,129 @@
   });
 
   function openPicker() {
-    const el = $('pickerList'); el.innerHTML = '';
-    if (state.inventory.length === 0) { el.innerHTML = '<div class="empty">Инвентарь пуст.<br>Открывай кейсы.</div>'; } else {
-      [...state.inventory].sort((a, b) => b.price - a.price).forEach(item => {
-        const div = document.createElement('div'); div.className = 'inv-item';
-        div.innerHTML = `<div class="inv-icon">${item.icon}</div><div class="inv-info"><div class="inv-name">${item.name}</div></div><div class="inv-price">${fmt(item.price)} ₽</div>`;
-        div.addEventListener('click', () => { state.upgSource = item.uid; if (state.upgTarget && state.upgTarget.price <= item.price) state.upgTarget = null; $('pickerOverlay').classList.remove('show'); renderUpgrader(); });
-        el.appendChild(div);
-      });
+    const el = $('pickerList');
+    el.innerHTML = '';
+
+    if (state.inventory.length === 0) {
+      el.innerHTML = '<div class="empty">Инвентарь пуст.<br>Открывай кейсы.</div>';
+    } else {
+      [...state.inventory]
+        .sort((a, b) => b.price - a.price)
+        .forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'inv-item';
+          div.innerHTML = `
+            <div class="inv-icon">${item.icon}</div>
+            <div class="inv-info"><div class="inv-name">${item.name}</div></div>
+            <div class="inv-price">${fmt(item.price)} ₽</div>
+          `;
+          div.addEventListener('click', () => {
+            state.upgSource = item.uid;
+            if (state.upgTarget && state.upgTarget.price <= item.price) state.upgTarget = null;
+            $('pickerOverlay').classList.remove('show');
+            renderUpgrader();
+          });
+          el.appendChild(div);
+        });
     }
+
     $('pickerOverlay').classList.add('show');
   }
+
   function openTargetPicker() {
-    const source = findItemByUid(state.upgSource); if (!source) { openPicker(); return; }
+    const source = findItemByUid(state.upgSource);
+    if (!source) {
+      openPicker();
+      return;
+    }
+
     $('targetPickerSub').textContent = 'Дороже ставки: ' + source.icon + ' ' + source.name + ' (' + fmt(source.price) + ' ₽)';
-    const el = $('targetPickerList'); el.innerHTML = ''; const targets = getTargets(source);
-    if (targets.length === 0) { el.innerHTML = '<div class="empty">Нет целей дороже ставки.</div>'; $('targetPickerOverlay').classList.add('show'); return; }
+
+    const el = $('targetPickerList');
+    el.innerHTML = '';
+    const targets = getTargets(source);
+
+    if (targets.length === 0) {
+      el.innerHTML = '<div class="empty">Нет целей дороже ставки.</div>';
+      $('targetPickerOverlay').classList.add('show');
+      return;
+    }
+
     targets.forEach(t => {
-      const ch = calcChance(source, t); const div = document.createElement('div'); div.className = 'inv-item';
-      div.innerHTML = `<div class="inv-icon">${t.icon}</div><div class="inv-info"><div class="inv-name">${t.name}</div></div><div class="inv-price">${fmt(t.price)} ₽</div><div style="color:${chanceColor(ch)};font-size:11px;font-weight:700;margin-left:6px;">${fmtChance(ch)}</div>`;
-      div.addEventListener('click', () => { state.upgTarget = t; $('targetPickerOverlay').classList.remove('show'); renderUpgrader(); });
+      const ch = calcChance(source, t);
+      const div = document.createElement('div');
+      div.className = 'inv-item';
+      div.innerHTML = `
+        <div class="inv-icon">${t.icon}</div>
+        <div class="inv-info"><div class="inv-name">${t.name}</div></div>
+        <div class="inv-price">${fmt(t.price)} ₽</div>
+        <div style="color:${chanceColor(ch)};font-size:11px;font-weight:700;margin-left:6px;">${fmtChance(ch)}</div>
+      `;
+      div.addEventListener('click', () => {
+        state.upgTarget = t;
+        $('targetPickerOverlay').classList.remove('show');
+        renderUpgrader();
+      });
       el.appendChild(div);
     });
+
     $('targetPickerOverlay').classList.add('show');
   }
+
   $('pickerClose').addEventListener('click', () => $('pickerOverlay').classList.remove('show'));
   $('targetPickerClose').addEventListener('click', () => $('targetPickerOverlay').classList.remove('show'));
-  $('upgClear').addEventListener('click', () => { if (state.upgRolling) return; state.upgSource = null; state.upgTarget = null; state.goldActive = false; renderUpgrader(); });
+
+  $('upgClear').addEventListener('click', () => {
+    if (state.upgRolling) return;
+    state.upgSource = null;
+    state.upgTarget = null;
+    state.goldActive = false;
+    renderUpgrader();
+  });
 
   function doUpgrade(isFast) {
-    const source = findItemByUid(state.upgSource); const target = state.upgTarget;
+    const source = findItemByUid(state.upgSource);
+    const target = state.upgTarget;
     if (!source || !target || state.upgRolling) return;
-    state.upgRolling = true; state.fastMode = !!isFast;
-    $('upgGo').disabled = true; $('upgFast').disabled = true;
+
+    state.upgRolling = true;
+    state.fastMode = !!isFast;
+    $('upgGo').disabled = true;
+    $('upgFast').disabled = true;
     send({ type: 'upgrade', sourceUid: source.uid, target });
   }
 
-  // ФИКС АНИМАЦИИ АПГРЕЙДЕРА
   function spinUpgradeWheel(msg) {
-    const { result, wonItem, chance, goldActive, target, source } = msg;
+    const { result, chance, goldActive } = msg;
     state.goldActive = !!goldActive;
+
     renderWheel(chance, state.goldActive);
     setWheelInfo(chance);
+
     const g = wheelGeometry(chance, state.goldActive);
-    let targetAngle;
-    if (result === 'gold') targetAngle = g.goldStart + g.goldDeg / 2;
-    else if (result === 'win') targetAngle = g.winDeg * 0.15 + Math.random() * Math.max(1, g.winDeg * 0.5);
-    else targetAngle = g.winDeg + Math.random() * Math.max(1, (360 - g.winDeg) * 0.9);
+    let targetAngle = 0;
 
-    const spin = 360 * 6 + (360 - targetAngle);
+    if (result === 'gold') {
+      targetAngle = g.goldStart + g.goldDeg / 2;
+    } else if (result === 'win') {
+      targetAngle = g.winDeg * 0.15 + Math.random() * Math.max(1, g.winDeg * 0.5);
+    } else {
+      targetAngle = g.winDeg + Math.random() * Math.max(1, (360 - g.winDeg) * 0.9);
+    }
 
-    // сброс в 0 без transition
+    targetAngle = normalizeAngle(targetAngle);
+
     elWheelSvg.style.transition = 'none';
     elWheelSvg.style.transform = 'rotate(0deg)';
+    state.wheelAngle = 0;
     void elWheelSvg.offsetWidth;
 
     requestAnimationFrame(() => {
+      const spin = 360 * 6 + (360 - targetAngle);
       elWheelSvg.style.transition = 'transform 4200ms cubic-bezier(0.15, 0.85, 0.2, 1)';
       elWheelSvg.style.transform = `rotate(${spin}deg)`;
+      state.wheelAngle = normalizeAngle(spin);
+
       setTimeout(() => finishUpgradeSpin(msg, false), 4300);
     });
   }
@@ -791,41 +1205,80 @@
     const { result, wonItem, target, source } = msg;
     state.upgRolling = false;
     state.goldActive = false;
+
     const display = wonItem || target;
     const isWin = result === 'win' || result === 'gold';
+
     $('winIcon').textContent = display.icon;
-    $('winRar').textContent = result === 'gold' ? 'ЗОЛОТОЙ ДРОП' : (isWin ? 'АПГРЕЙД УДАЛСЯ' : 'АПГРЕЙД ПРОВАЛЕН');
+    $('winRar').textContent = result === 'gold'
+      ? 'ЗОЛОТОЙ ДРОП'
+      : (isWin ? 'АПГРЕЙД УДАЛСЯ' : 'АПГРЕЙД ПРОВАЛЕН');
     $('winName').textContent = display.name;
-    $('winPrice').textContent = isWin ? '+' + fmt(display.price) + ' ₽' : '-' + fmt(source.price) + ' ₽';
+    $('winPrice').textContent = isWin
+      ? '+' + fmt(display.price) + ' ₽'
+      : '-' + fmt(source.price) + ' ₽';
+
     $('overlay').classList.add('show');
     renderInventory();
     renderBalance();
+    renderUpgrader();
   }
+
   $('upgGo').addEventListener('click', () => doUpgrade(false));
   $('upgFast').addEventListener('click', () => doUpgrade(true));
 
-  // БАТЛЫ
   function renderBattles() {
-    const el = $('battlesList'); el.innerHTML = '';
-    if (!state.battles.length) { el.innerHTML = '<div class="empty">Нет открытых батлов.</div>'; return; }
+    const el = $('battlesList');
+    el.innerHTML = '';
+
+    if (!state.battles.length) {
+      el.innerHTML = '<div class="empty">Нет открытых батлов.</div>';
+      return;
+    }
+
     state.battles.forEach(b => {
-      const div = document.createElement('div'); div.className = 'battle-item';
+      const div = document.createElement('div');
+      div.className = 'battle-item';
       const mine = b.creatorId === state.playerId;
+
       div.innerHTML = `
-        <div class="bi-top"><div class="bi-nick">${b.creatorNick}<span class="bi-title ${b.creatorTitle.toLowerCase()}">${b.creatorTitle}</span></div><div class="bi-price">${fmt(b.price)} ₽</div></div>
+        <div class="bi-top">
+          <div class="bi-nick">${b.creatorNick}<span class="bi-title ${String(b.creatorTitle || '').toLowerCase()}">${b.creatorTitle}</span></div>
+          <div class="bi-price">${fmt(b.price)} ₽</div>
+        </div>
         <div class="bi-cases">${b.cases.map(c => `<span class="bi-case">${c.icon} ${c.name}</span>`).join('')}</div>
-        <div class="bi-actions">${mine ? `<button class="bi-cancel" data-cancel="${b.id}">Отменить</button>` : `<button class="bi-join" data-join="${b.id}">Присоединиться</button>`}</div>
+        <div class="bi-actions">
+          ${mine
+            ? `<button class="bi-cancel" data-cancel="${b.id}">Отменить</button>`
+            : `<button class="bi-join" data-join="${b.id}">Присоединиться</button>`}
+        </div>
       `;
+
       el.appendChild(div);
     });
-    el.querySelectorAll('[data-join]').forEach(e => e.addEventListener('click', () => send({ type: 'battle_join', battleId: e.dataset.join })));
-    el.querySelectorAll('[data-cancel]').forEach(e => e.addEventListener('click', () => send({ type: 'battle_cancel', battleId: e.dataset.cancel })));
+
+    el.querySelectorAll('[data-join]').forEach(e =>
+      e.addEventListener('click', () => send({ type: 'battle_join', battleId: e.dataset.join }))
+    );
+
+    el.querySelectorAll('[data-cancel]').forEach(e =>
+      e.addEventListener('click', () => send({ type: 'battle_cancel', battleId: e.dataset.cancel }))
+    );
   }
+
   $('battleCreateBtn').addEventListener('click', () => {
-    const el = $('battleCasePicker'); el.innerHTML = ''; let selected = [];
+    const el = $('battleCasePicker');
+    el.innerHTML = '';
+    let selected = [];
+
     state.cases.filter(c => c.id !== 'free').forEach(c => {
-      const div = document.createElement('div'); div.className = 'inv-item';
-      div.innerHTML = `<div class="inv-icon">${c.icon}</div><div class="inv-info"><div class="inv-name">${c.name}</div></div><div class="inv-price">${fmt(c.price)} ₽</div>`;
+      const div = document.createElement('div');
+      div.className = 'inv-item';
+      div.innerHTML = `
+        <div class="inv-icon">${c.icon}</div>
+        <div class="inv-info"><div class="inv-name">${c.name}</div></div>
+        <div class="inv-price">${fmt(c.price)} ₽</div>
+      `;
       div.addEventListener('click', () => {
         selected.push(c.id);
         if (selected.length > 20) selected.shift();
@@ -834,103 +1287,161 @@
       });
       el.appendChild(div);
     });
+
     $('battleTotal').textContent = '0 ₽';
+
     $('battleCreateConfirm').onclick = () => {
       if (!selected.length) return;
       send({ type: 'battle_create', caseIds: selected });
       $('battleCreateOverlay').classList.remove('show');
     };
+
     $('battleCreateOverlay').classList.add('show');
   });
+
   $('battleCreateClose').addEventListener('click', () => $('battleCreateOverlay').classList.remove('show'));
 
   let currentBattle = null;
+
   function startBattleArena(battle) {
     currentBattle = battle;
     $('battleArena').classList.add('show');
+
     const isCreator = battle.creatorId === state.playerId;
     const left = isCreator ? battle.creatorNick : battle.joinerNick;
     const right = isCreator ? battle.joinerNick : battle.creatorNick;
+
     $('arenaLeftName').textContent = left;
     $('arenaRightName').textContent = right;
     $('arenaLeftTrack').innerHTML = '';
     $('arenaRightTrack').innerHTML = '';
     $('arenaStatus').textContent = 'Крутка...';
-    const cd = $('arenaCountdown'); cd.style.display = 'flex'; let n = 5;
+
+    const cd = $('arenaCountdown');
+    cd.style.display = 'flex';
+    let n = 5;
     cd.textContent = n;
+
     const iv = setInterval(() => {
       n--;
-      if (n <= 0) { clearInterval(iv); cd.style.display = 'none'; }
-      else cd.textContent = n;
+      if (n <= 0) {
+        clearInterval(iv);
+        cd.style.display = 'none';
+      } else {
+        cd.textContent = n;
+      }
     }, 1000);
   }
+
   function onBattleProgress(msg) {
     if (!currentBattle || msg.battleId !== currentBattle.id) return;
+
     const isCreator = currentBattle.creatorId === state.playerId;
     let side;
+
     if (msg.playerId === currentBattle.creatorId) side = isCreator ? 'left' : 'right';
     else side = isCreator ? 'right' : 'left';
+
     const track = side === 'left' ? $('arenaLeftTrack') : $('arenaRightTrack');
     track.innerHTML = '';
+
     msg.drops.forEach(d => {
-      const div = document.createElement('div'); div.className = 'arena-v-item';
-      div.innerHTML = `<div class="avi-icon">${d.icon}</div><div class="avi-name">${d.name}</div><div class="avi-price">${fmt(d.price)} ₽</div>`;
+      const div = document.createElement('div');
+      div.className = 'arena-v-item';
+      div.innerHTML = `
+        <div class="avi-icon">${d.icon}</div>
+        <div class="avi-name">${d.name}</div>
+        <div class="avi-price">${fmt(d.price)} ₽</div>
+      `;
       track.appendChild(div);
     });
   }
+
   function onBattleFinish(msg) {
     if (!currentBattle || msg.battleId !== currentBattle.id) return;
+
     const win = msg.winnerId === state.playerId;
     $('battleResultIcon').textContent = win ? '🏆' : '💀';
     $('battleResultRar').textContent = win ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
     $('battleResultName').textContent = win ? 'Ты забрал всё' : 'Ты проиграл';
     $('battleResultPrice').textContent = `${fmt(msg.cSum)} ₽ vs ${fmt(msg.jSum)} ₽`;
     $('battleResultOverlay').classList.add('show');
-    setTimeout(() => { $('battleArena').classList.remove('show'); currentBattle = null; }, 800);
+
+    setTimeout(() => {
+      $('battleArena').classList.remove('show');
+      currentBattle = null;
+    }, 800);
   }
+
   $('battleResultClose').addEventListener('click', () => $('battleResultOverlay').classList.remove('show'));
 
-  // ЗАДАНИЯ
   function tickTasks() {
     const now = Date.now();
     if (!state.sessionStart) state.sessionStart = now;
     const mins = Math.floor((now - state.sessionStart) / 60000);
+
     ['10', '30', '60'].forEach(m => {
       const need = parseInt(m);
-      const el = $('timer' + m); const btn = $('btn' + m);
+      const el = $('timer' + m);
+      const btn = $('btn' + m);
       if (!el) return;
+
       el.textContent = Math.min(mins, need) + ' / ' + need + ' мин';
-      if (mins >= need) { btn.disabled = false; btn.classList.add('ready'); }
+      if (mins >= need) {
+        btn.disabled = false;
+        btn.classList.add('ready');
+      }
     });
   }
+
   setInterval(tickTasks, 10000);
+
   ['10', '30', '60'].forEach(m => {
     const btn = $('btn' + m);
-    if (btn) btn.addEventListener('click', () => { send({ type: 'claim_task', taskId: m + 'm' }); btn.disabled = true; btn.classList.remove('ready'); });
+    if (btn) {
+      btn.addEventListener('click', () => {
+        send({ type: 'claim_task', taskId: m + 'm' });
+        btn.disabled = true;
+        btn.classList.remove('ready');
+      });
+    }
   });
-  $('btnDaily').addEventListener('click', () => { send({ type: 'claim_task', taskId: 'daily' }); });
 
-  // ПРОФИЛЬ
+  $('btnDaily').addEventListener('click', () => {
+    send({ type: 'claim_task', taskId: 'daily' });
+  });
+
   $('logoBtn').addEventListener('click', () => $('profileOverlay').classList.add('show'));
   $('profileClose').addEventListener('click', () => $('profileOverlay').classList.remove('show'));
   $('earnBtn').addEventListener('click', () => send({ type: 'earn_money' }));
-  $('exportBtn').addEventListener('click', () => { window.open('/api/export', '_blank'); });
+
+  $('exportBtn').addEventListener('click', () => {
+    window.open('/api/export', '_blank');
+  });
+
   $('importBtn').addEventListener('click', () => {
-    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.json';
+
     inp.onchange = () => {
-      const f = inp.files[0]; if (!f) return;
+      const f = inp.files[0];
+      if (!f) return;
+
       const rd = new FileReader();
       rd.onload = () => {
-        fetch('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: rd.result })
-          .then(() => location.reload());
+        fetch('/api/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: rd.result
+        }).then(() => location.reload());
       };
       rd.readAsText(f);
     };
+
     inp.click();
   });
 
   connect();
 })();
 </script>
-</body>
- </html>
