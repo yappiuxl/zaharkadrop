@@ -246,6 +246,24 @@
   .case-info-btn:active { background: var(--accent); color: #000; border-color: var(--accent); }
   .case-info-btn::after { content: 'i'; font-style: italic; }
 
+  /* ===== РУЛЕТКА (вкладка) ===== */
+  .roul-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+    align-content: start;
+  }
+  .roul-hint {
+    font-size: 11px;
+    color: var(--dim);
+    padding: 2px 2px 6px;
+    line-height: 1.4;
+  }
+
   /* ===== UPGRADER ===== */
   .upgrader {
     display: flex;
@@ -303,7 +321,6 @@
   .upg-slot .slot-empty { font-size: 36px; color: var(--border); }
   .upg-slot .slot-hint { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
 
-  /* ===== КОЛЕСО ===== */
   .wheel-wrap {
     position: relative;
     width: 150px;
@@ -583,7 +600,7 @@
     .item .icon { font-size: 32px; }
     .item .name { font-size: 9px; }
 
-    .cases { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .cases, .roul-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .case { padding: 10px 6px; gap: 6px; }
     .case .case-icon { font-size: 32px; }
     .case .case-name { font-size: 12px; }
@@ -649,11 +666,17 @@
   <main>
     <div class="tabs">
       <button class="tab active" data-tab="cases">Кейсы</button>
+      <button class="tab" data-tab="roulette">Рулетка</button>
       <button class="tab" data-tab="upgrader">Апгрейдер</button>
     </div>
 
     <div class="view active" id="viewCases">
       <div class="cases" id="cases"></div>
+    </div>
+
+    <div class="view" id="viewRoulette">
+      <div class="roul-hint">Выбери кейс — лента крутится, дроп падает в инвентарь. Шансы те же, что и в кейсах.</div>
+      <div class="roul-grid" id="roulGrid"></div>
     </div>
 
     <div class="view" id="viewUpgrader">
@@ -715,7 +738,6 @@
   </div>
 </div>
 
-<!-- Пикер ставки -->
 <div class="overlay" id="pickerOverlay">
   <div class="info-card">
     <div class="info-head">
@@ -729,7 +751,6 @@
   </div>
 </div>
 
-<!-- Пикер цели -->
 <div class="overlay" id="targetPickerOverlay">
   <div class="info-card">
     <div class="info-head">
@@ -747,7 +768,7 @@
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'zaharka_drop_save_v4';
+  const STORAGE_KEY = 'zaharka_drop_save_v5';
   const HOUSE_EDGE = 1.0;
   const MAX_HISTORY = 12;
 
@@ -876,12 +897,14 @@
     renderInventory();
     updateCaseStates();
     renderUpgrader();
+    renderRouletteGrid();
   }
 
   const $ = id => document.getElementById(id);
   const elTrack = $('track');
   const elBalance = $('balance');
   const elCases = $('cases');
+  const elRoulGrid = $('roulGrid');
   const elInv = $('inventory');
   const elOverlay = $('overlay');
   const elWinCard = $('winCard');
@@ -962,10 +985,46 @@
   }
 
   function updateCaseStates() {
-    document.querySelectorAll('.case').forEach(el => {
+    document.querySelectorAll('#viewCases .case').forEach(el => {
       const c = CASES.find(x => x.id === el.dataset.id);
       el.classList.toggle('disabled', state.balance < c.price || state.rolling);
     });
+    document.querySelectorAll('#roulGrid .case').forEach(el => {
+      const c = CASES.find(x => x.id === el.dataset.id);
+      el.classList.toggle('disabled', state.balance < c.price || state.rolling);
+    });
+  }
+
+  // ===== РУЛЕТКА (вкладка) =====
+  function renderRouletteGrid() {
+    elRoulGrid.innerHTML = '';
+    CASES.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'case';
+      div.dataset.id = c.id;
+      div.innerHTML = `
+        <div class="case-open" data-spin="${c.id}">
+          <div class="case-icon">${c.icon}</div>
+          <div class="case-name">${c.name}</div>
+          <div class="case-price">${fmt(c.price)} ₽</div>
+        </div>
+      `;
+      elRoulGrid.appendChild(div);
+    });
+    elRoulGrid.querySelectorAll('[data-spin]').forEach(el => {
+      el.addEventListener('click', () => {
+        const c = CASES.find(x => x.id === el.dataset.spin);
+        if (c) spinRoulette(c);
+      });
+    });
+    updateCaseStates();
+  }
+
+  function spinRoulette(caseObj) {
+    if (state.rolling) return;
+    if (state.balance < caseObj.price) return;
+    switchTab('cases'); // лента наверху видна всегда, но переключим на кейсы, чтобы полоса была на виду
+    openCase(caseObj);
   }
 
   function renderInventory() {
@@ -1022,7 +1081,6 @@
     renderTrack(items);
   }
 
-  // ФИКС: двойной rAF + защита от нулевого шага, чтобы лента корректно доезжала
   function animateRoll(finalItem, weights, onDone) {
     buildRoulette(finalItem, weights);
     requestAnimationFrame(() => {
@@ -1220,7 +1278,6 @@
     return `hsl(${hue}, 85%, 55%)`;
   }
 
-  // ФИКС: нормализация угла через rAF, чтобы не мигало на границе 0/360
   function spinWheel(chance, isWin) {
     return new Promise(resolve => {
       const p = Math.max(0.001, Math.min(0.999, chance));
@@ -1272,7 +1329,6 @@
     const source = findItemByUid(state.upgSource);
     const target = state.upgTarget;
 
-    // Слот ставки
     const srcEl = $('upgSourceSlot');
     srcEl.className = 'upg-slot';
     if (source) {
@@ -1287,7 +1343,6 @@
     }
     srcEl.onclick = () => openPicker();
 
-    // Слот цели
     const tgtEl = $('upgTargetSlot');
     tgtEl.className = 'upg-slot';
     if (target) {
@@ -1311,14 +1366,12 @@
       };
     }
 
-    // Шанс + колесо
     const chance = calcChance(source, target);
     renderWheel(chance);
     setWheelInfo(chance);
     elWheelSvg.style.transition = 'none';
     elWheelSvg.style.transform = 'rotate(0deg)';
 
-    // Кнопка
     $('upgGo').disabled = !(source && target) || state.upgRolling;
 
     renderHistory();
@@ -1344,7 +1397,6 @@
     });
   }
 
-  // ===== ПИКЕР СТАВКИ =====
   function openPicker() {
     elPickerList.innerHTML = '';
     if (state.inventory.length === 0) {
@@ -1381,7 +1433,6 @@
     elPickerOverlay.classList.add('show');
   }
 
-  // ===== ПИКЕР ЦЕЛИ =====
   function openTargetPicker() {
     const source = findItemByUid(state.upgSource);
     if (!source) { openPicker(); return; }
@@ -1436,7 +1487,6 @@
     elTargetPickerOverlay.classList.add('show');
   }
 
-  // ===== АПГРЕЙД =====
   async function doUpgrade() {
     const source = findItemByUid(state.upgSource);
     const target = state.upgTarget;
@@ -1504,7 +1554,6 @@
     elOverlay.classList.add('show');
   }
 
-  // ===== EVENTS =====
   $('winClose').addEventListener('click', () => elOverlay.classList.remove('show'));
   $('infoClose').addEventListener('click', () => elInfoOverlay.classList.remove('show'));
   elInfoOverlay.addEventListener('click', (e) => { if (e.target === elInfoOverlay) elInfoOverlay.classList.remove('show'); });
@@ -1522,10 +1571,10 @@
     renderUpgrader();
   });
 
-  // ===== INIT =====
   function init() {
     load();
     renderCases();
+    renderRouletteGrid();
     renderInventory();
     renderUpgrader();
     updateBalance();
@@ -1537,4 +1586,4 @@
 })();
 </script>
 </body>
- </html>
+       </html>
